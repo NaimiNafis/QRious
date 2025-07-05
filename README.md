@@ -1,13 +1,21 @@
-# QR Scanner App
+# 🔎 QRious
+<p align="center">
+  <img src="assets/screenshots/banner.png" alt="QRious Banner">
+</p>
 
-A modern, feature-rich QR code scanner and generator with built-in security features.
+<p align="center">
+  <a href="https://flutter.dev/">
+    <img src="https://img.shields.io/badge/Flutter-3.7.2-blue?logo=flutter" alt="Flutter Version">
+  </a>
+  <a href="LICENSE">
+    <img src="https://img.shields.io/badge/license-MIT-green.svg" alt="License">
+  </a>
+  <a href="https://github.com/NaimiNafis/QRious">
+    <img src="https://img.shields.io/github/repo-size/NaimiNafis/QRious" alt="Repo Size">
+  </a>
+</p>
 
-![App Banner](assets/screenshots/banner.png)
-
-## 📱 Download
-
-[![Download on Google Play](https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png)](https://play.google.com/store)
-[![Download on App Store](https://developer.apple.com/assets/elements/badges/download-on-the-app-store.svg)](https://apps.apple.com/us/app/)
+QRious is a modern QR code utility built with Flutter, focusing on security, privacy, and user experience. Unlike many scanners, it includes proactive checks for malicious URLs and performs all operations on-device, ensuring your data remains private.
 
 ## ✨ Features
 
@@ -18,11 +26,35 @@ A modern, feature-rich QR code scanner and generator with built-in security feat
 - **Customize** QR code appearance
 - **Dark mode** support
 
+## 📱 Screenshots
+
+### Light Mode
 <p align="center">
-  <img src="assets/screenshots/scan.png" width="30%" />
-  <img src="assets/screenshots/create.png" width="30%" /> 
-  <img src="assets/screenshots/history.png" width="30%" />
+  <img src="assets/screenshots/lm_scan.png" width="24%" />
+  <img src="assets/screenshots/lm_creator.png" width="24%" />
+  <img src="assets/screenshots/lm_history_lists.png" width="24%" />
+  <img src="assets/screenshots/lm_result_scan.png" width="24%" />
 </p>
+
+### Dark Mode
+<p align="center">
+  <img src="assets/screenshots/dm_scan.png" width="24%" />
+  <img src="assets/screenshots/dm_creator.png" width="24%" />
+  <img src="assets/screenshots/dm_history_lists.png" width="24%" />
+  <img src="assets/screenshots/dm_result_scan.png" width="24%" />
+</p>
+
+## 🛠️ Built With
+
+- **Flutter** - The primary framework for building the app
+- **Provider** - For state management following MVVM architecture
+- **mobile_scanner** - For accessing the device camera to scan QR codes
+- **url_launcher** - For opening links from scanned QR codes
+- **sqflite** - Local database for storing scan history
+- **image_picker** - For selecting images containing QR codes
+- **share_plus** - For sharing generated QR codes
+
+The app follows the MVVM (Model-View-ViewModel) architecture pattern with a clean separation of concerns between data, business logic, and UI components.
 
 ## 🚀 Quick Start
 
@@ -37,8 +69,8 @@ A modern, feature-rich QR code scanner and generator with built-in security feat
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/username/qr_scanner_app.git
-   cd qr_scanner_app
+   git clone https://github.com/NaimiNafis/QRious
+   cd QRious
    ```
 
 2. **Install dependencies**
@@ -65,6 +97,7 @@ A modern, feature-rich QR code scanner and generator with built-in security feat
 If you encounter pod install issues, try:
 ```bash
 flutter clean
+flutter precache --ios --force
 cd ios && pod install && cd ..
 ```
 
@@ -74,7 +107,7 @@ If camera doesn't work, check that you've granted camera permission in your devi
 
 ## 💡 Contributing
 
-Contributions are welcome! See [FEATURES.md](FEATURES.md) for detailed technical documentation.
+Contributions are welcome! For more details about the app's architecture and implementation, check [appcore.md](appcore.md).
 
 1. Fork the repository
 2. Create your feature branch (`git checkout -b feature/amazing-feature`)
@@ -88,17 +121,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 📩 Contact
 
-Project Link: [https://github.com/username/qr_scanner_app](https://github.com/username/qr_scanner_app)
+Naimi Nafis: [Github](https://github.com/NaimiNafis) | [Portfolio](https://naiminafis.github.io/portfolio/)
 
----
-
-### Screenshots
-
-<p align="center">
-  <img src="assets/screenshots/screenshot1.png" width="24%" />
-  <img src="assets/screenshots/screenshot2.png" width="24%" />
-  <img src="assets/screenshots/screenshot3.png" width="24%" />
-  <img src="assets/screenshots/screenshot4.png" width="24%" />
-</p>
-
-*Note: Replace placeholder images with actual screenshots of your app.*
+isel-yoshii: [Github](https://github.com/isel-yoshii)

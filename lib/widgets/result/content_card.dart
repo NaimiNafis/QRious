@@ -34,7 +34,7 @@ class ContentCard extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: Colors.grey.shade200,
+              color: AppColors.background,
               borderRadius: BorderRadius.circular(30),
             ),
             child: Icon(

@@ -1,4 +1,4 @@
-# QR Scanner App
+# QRious
 
 A comprehensive Flutter application for scanning and creating QR codes with a modern, intuitive interface. This app features robust security measures for URL verification, extensive QR code creation options, and a user-friendly history management system.
 
@@ -64,18 +64,46 @@ lib/
 │   └── theme_provider.dart     # Theme state management
 ├── screens/
 │   ├── scanner/                # QR scanning functionality
+│   │   ├── scanner_controller.dart
+│   │   ├── scanner_screen.dart
+│   │   └── scanner_view.dart
 │   ├── creator/                # QR code creation
+│   │   ├── color_selector.dart
+│   │   ├── creator_screen.dart
+│   │   ├── qr_decorate_result_screen.dart
+│   │   ├── qr_decorate_screen.dart
+│   │   ├── qr_input_screen.dart
+│   │   └── qr_result_screen.dart
 │   ├── history/                # History management
+│   │   ├── history_controller.dart
+│   │   ├── history_list_view.dart
+│   │   └── history_screen.dart
 │   └── result/                 # Scan result display
+│       ├── result_content_view.dart
+│       ├── result_controller.dart
+│       └── result_screen.dart
 ├── utils/
 │   ├── app_colors.dart         # Theme-aware color system
 │   ├── qr_capture_util.dart    # QR capture utilities
+│   ├── theme_helper.dart       # Theme utilities
 │   └── url_safety_util.dart    # URL security validation
 └── widgets/
+    ├── bottom_nav_bar.dart     # Main navigation
+    ├── qr_pixel_painter.dart   # Custom QR rendering
+    ├── qr_preview_widget.dart  # QR preview component
     ├── history/                # History components
+    │   ├── history_app_bar.dart
+    │   ├── history_empty_state.dart
+    │   ├── history_list_item.dart
+    │   └── selection_action_bar.dart
     ├── result/                 # Result components
-    ├── scanner/                # Scanner components
-    └── ...                     # Other UI components
+    │   ├── content_card.dart
+    │   ├── result_action_button.dart
+    │   └── safety_indicator.dart
+    └── scanner/                # Scanner components
+        ├── scan_frame.dart
+        ├── scanner_controls.dart
+        └── scanner_loading.dart
 ```
 
 ### State Management
@@ -92,19 +120,22 @@ lib/
 ## 🛠️ Technology Stack
 
 ### Core Dependencies
-- **Flutter**: Cross-platform UI framework
-- **Provider**: State management
-- **mobile_scanner**: Camera-based QR code scanning
-- **qr_flutter**: QR code generation
-- **sqflite**: Local SQLite database
-- **path_provider**: File system access
-- **screenshot**: QR code image capture
-- **share_plus**: Content sharing
-- **url_launcher**: URL opening
-- **shared_preferences**: Theme persistence
+- **Flutter**: Cross-platform UI framework (^3.7.2)
+- **Provider**: State management (^6.1.2)
+- **mobile_scanner**: Camera-based QR code scanning (^7.0.1)
+- **qr_flutter**: QR code generation (^4.1.0)
+- **sqflite**: Local SQLite database (^2.3.3)
+- **path_provider**: File system access (^2.1.5)
+- **screenshot**: QR code image capture (^3.0.0)
+- **share_plus**: Content sharing (^11.0.0)
+- **url_launcher**: URL opening (^6.2.5)
+- **shared_preferences**: Theme persistence (^2.5.3)
+- **flutter_colorpicker**: Color selection UI (^1.1.0)
+- **google_fonts**: Typography enhancement (^6.2.1)
+- **flutter_iconpicker**: Icon selection (^4.0.1)
 
 ### Development Dependencies
-- **flutter_lints**: Code quality and style enforcement
+- **flutter_lints**: Code quality and style enforcement (^5.0.0)
 - **flutter_test**: Unit and widget testing
 
 ## 📱 App Flow
@@ -168,8 +199,8 @@ The app employs a multi-layered approach to protect users from potentially harmf
 ### Installation
 1. **Clone the repository**
    ```bash
-   git clone <repository-url>
-   cd qr_scanner_app
+   git clone https://github.com/NaimiNafis/QRious.git
+   cd QRious
    ```
 
 2. **Install dependencies**
@@ -199,13 +230,6 @@ The app employs a multi-layered approach to protect users from potentially harmf
 - File download for QR code images
 
 ## 🔧 Development
-
-### Security Configuration
-```dart
-// To add an external URL security API key (optional)
-// Access through Settings → URL Safety Settings
-await UrlSafetyUtil.saveApiKey('your-api-key');
-```
 
 ### Code Style
 - Follows Flutter linting rules
@@ -251,9 +275,9 @@ CREATE TABLE qr_codes (
 ## 🎨 UI/UX Design
 
 ### Color Palette
-- **Light Theme**: Cool gray palette with subtle contrasts
-- **Dark Theme**: Dark gray palette with proper contrast ratios
-- **Accent Colors**: Consistent primary colors across themes
+- **Light Theme**: Clean white background with purple accents
+- **Dark Theme**: Deep gray background with purple accents
+- **Accent Colors**: Deep Purple (primary: #673AB7, variant: #512DA8)
 - **Safety Indicators**: Green for safe, red for potentially unsafe
 
 ### Navigation
@@ -292,16 +316,10 @@ CREATE TABLE qr_codes (
 ## 🤝 Contributing
 
 ### Development Guidelines
-1. Follow existing code style and patterns
-2. Add proper documentation for new features
-3. Include tests for new functionality
-4. Update this README for significant changes
-
-### Pull Request Process
 1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests if applicable
+2. Follow existing code style and patterns
+3. Add proper documentation for new features
+4. Include tests for new functionality
 5. Submit a pull request with detailed description
 
 ## 📄 License

@@ -58,6 +58,9 @@ class _SafetyIndicatorState extends State<SafetyIndicator> {
 
   @override
   Widget build(BuildContext context) {
+    // Check if we're in dark mode
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    
     // Show loading indicator while checking
     if (_isLoading) {
       return Container(
@@ -99,6 +102,13 @@ class _SafetyIndicatorState extends State<SafetyIndicator> {
     final message = _isSafe 
         ? 'This link appears safe to open!'
         : 'This link might be unsafe: $_reason';
+    
+    // Use a lighter background for unsafe warning in light mode
+    final backgroundColor = _isSafe 
+        ? color.withValues(alpha: 255 * 0.05)
+        : !_isSafe && !isDarkMode
+          ? const Color(0xFFFFEBEE) // Light red background
+          : color.withValues(alpha: 255 * 0.05);
 
     return Container(
       margin: const EdgeInsets.only(top: 15),
@@ -106,7 +116,7 @@ class _SafetyIndicatorState extends State<SafetyIndicator> {
       decoration: BoxDecoration(
         border: Border.all(color: color, width: 2),
         borderRadius: BorderRadius.circular(15),
-        color: color.withValues(alpha: 255 * 0.05),
+        color: backgroundColor,
       ),
       child: Row(
         children: [

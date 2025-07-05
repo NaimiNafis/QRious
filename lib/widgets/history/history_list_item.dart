@@ -26,6 +26,9 @@ class HistoryListItem extends StatelessWidget {
   
   @override
   Widget build(BuildContext context) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    final textColor = isSelected && isDarkMode ? Colors.black : null;
+    
     return InkWell(
       onTap: onTap,
       onLongPress: onLongPress,
@@ -79,15 +82,19 @@ class HistoryListItem extends StatelessWidget {
           child: ListTile(
             leading: inSelectionMode 
               ? _buildSelectionIndicator()
-              : _buildTypeIcon(),
+              : _buildTypeIcon(isDarkMode),
             title: Text(
               item.type,
-              style: const TextStyle(fontWeight: FontWeight.bold),
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                color: textColor,
+              ),
             ),
             subtitle: Text(
               item.content,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
+              style: TextStyle(color: textColor != null ? textColor.withOpacity(0.8) : null),
             ),
             trailing: !inSelectionMode
                 ? IconButton(
@@ -122,18 +129,20 @@ class HistoryListItem extends StatelessWidget {
     );
   }
   
-  Widget _buildTypeIcon() {
+  Widget _buildTypeIcon(bool isDarkMode) {
+    final iconColor = isSelected && isDarkMode ? Colors.black : null;
+    
     return Container(
       padding: const EdgeInsets.all(8),
       decoration: BoxDecoration(
         color: AppColors.background,
         shape: BoxShape.circle,
       ),
-      child: _getIconForType(item.type),
+      child: _getIconForType(item.type, iconColor),
     );
   }
   
-  Widget _getIconForType(String type) {
+  Widget _getIconForType(String type, Color? iconColor) {
     IconData iconData;
     
     switch (type) {
@@ -153,6 +162,6 @@ class HistoryListItem extends StatelessWidget {
         iconData = Icons.text_snippet;
     }
     
-    return Icon(iconData);
+    return Icon(iconData, color: iconColor);
   }
 } 
