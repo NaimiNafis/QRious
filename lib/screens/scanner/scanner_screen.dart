@@ -118,12 +118,17 @@ class _ScannerScreenState extends State<ScannerScreen> with WidgetsBindingObserv
               isScanning: isScanning,
               onFlashToggle: _setFlashlight,
               onModeToggle: _setScanMode,
-              onDetect: (capture) => _scannerController.handleBarcodeDetection(
-                capture, 
-                isQrMode, 
-                isScanning, 
-                _setScanning,
-              ),
+              onDetect: (capture) {
+                // Use an async wrapper to handle the Future
+                () async {
+                  await _scannerController.handleBarcodeDetection(
+                    capture, 
+                    isQrMode, 
+                    isScanning, 
+                    _setScanning,
+                  );
+                }();
+              },
             ),
           ),
         ],

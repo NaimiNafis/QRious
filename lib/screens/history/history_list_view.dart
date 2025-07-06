@@ -72,6 +72,7 @@ class _HistoryListViewState extends State<HistoryListView> {
                         type: item.type,
                         id: item.id,
                         isFavorite: item.isFavorite,
+                        isSafe: item.isSafe,
                       ),
                     ),
                   );
