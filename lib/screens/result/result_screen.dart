@@ -10,6 +10,7 @@ class ResultScreen extends StatefulWidget {
   final String type;
   final int? id;
   final bool? isFavorite;
+  final bool? isSafe;
 
   const ResultScreen({
     super.key,
@@ -17,6 +18,7 @@ class ResultScreen extends StatefulWidget {
     required this.type,
     this.id,
     this.isFavorite,
+    this.isSafe,
   });
   
   @override
@@ -27,6 +29,7 @@ class _ResultScreenState extends State<ResultScreen> {
   // Track favorite status locally to update UI
   bool? _isFavorite;
   int? _currentId;
+  bool? _isSafe;
   
   // Controller
   late ResultController _controller;
@@ -36,6 +39,7 @@ class _ResultScreenState extends State<ResultScreen> {
     super.initState();
     _isFavorite = widget.isFavorite;
     _currentId = widget.id;
+    _isSafe = widget.isSafe;
   }
   
   @override
@@ -85,6 +89,7 @@ class _ResultScreenState extends State<ResultScreen> {
       setState(() {
         _currentId = newItem.id;
         _isFavorite = true;
+        _isSafe = newItem.isSafe;
       });
       
       ScaffoldMessenger.of(context).showSnackBar(
@@ -103,6 +108,29 @@ class _ResultScreenState extends State<ResultScreen> {
         ),
       );
     }
+  }
+  
+  // Handle URL open action with safety check
+  Future<void> _handleOpenUrl() async {
+    await _controller.launchURL(widget.content, isSafeOverride: _isSafe);
+  }
+  
+  // Handle copy action with safety check
+  Future<void> _handleCopy() async {
+    await _controller.copyToClipboard(
+      widget.content, 
+      type: widget.type, 
+      isSafeOverride: _isSafe,
+    );
+  }
+  
+  // Handle share action with safety check
+  Future<void> _handleShare() async {
+    await _controller.shareContent(
+      widget.content,
+      type: widget.type,
+      isSafeOverride: _isSafe,
+    );
   }
   
   @override
@@ -140,10 +168,10 @@ class _ResultScreenState extends State<ResultScreen> {
           type: widget.type,
           typeIcon: typeIcon,
           onOpen: (widget.type == 'URL') 
-              ? () => _controller.launchURL(widget.content)
+              ? _handleOpenUrl
               : null,
-          onCopy: () => _controller.copyToClipboard(widget.content),
-          onShare: () => _controller.shareContent(widget.content),
+          onCopy: _handleCopy,
+          onShare: _handleShare,
         ),
       ),
     );

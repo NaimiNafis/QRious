@@ -5,6 +5,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../providers/history_provider.dart';
 import '../../models/qr_code_model.dart';
 import '../../utils/url_safety_util.dart';
+import '../../utils/safety_dialog_util.dart';
 
 class ResultController {
   final BuildContext context;
@@ -15,8 +16,40 @@ class ResultController {
     required this.historyProvider,
   });
   
-  // Launch URL
-  Future<void> launchURL(String url) async {
+  // Launch URL with safety check
+  Future<void> launchURL(String url, {bool? isSafeOverride}) async {
+    // Check if this URL is potentially unsafe
+    bool isSafe = isSafeOverride ?? true;
+    String reason = '';
+    
+    if (isSafeOverride == null) {
+      final safetyResult = await UrlSafetyUtil.checkUrlWithApi(url);
+      isSafe = safetyResult['isSafe'] ?? true;
+      reason = safetyResult['reason'] ?? 'Unknown reason';
+    }
+    
+    // Check if context is still valid
+    if (!context.mounted) return;
+    
+    // If URL is unsafe, show confirmation dialog
+    if (!isSafe) {
+      final shouldProceed = await SafetyDialogUtil.showUnsafeUrlConfirmation(
+        context: context,
+        action: 'open',
+        url: url,
+        reason: reason,
+      );
+      
+      // Check if context is still valid after awaiting dialog
+      if (!context.mounted) return;
+      
+      if (!shouldProceed) {
+        // User canceled the operation
+        return;
+      }
+    }
+    
+    // Proceed with opening the URL
     final Uri uri = Uri.parse(url);
     if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
       if (!context.mounted) return;
@@ -29,17 +62,85 @@ class ResultController {
     }
   }
   
-  // Copy to clipboard
-  void copyToClipboard(String content) {
-    Clipboard.setData(ClipboardData(text: content));
+  // Copy to clipboard with safety check for URLs
+  Future<void> copyToClipboard(String content, {String? type, bool? isSafeOverride}) async {
+    // Check if this is a URL and potentially unsafe
+    bool isSafe = isSafeOverride ?? true;
+    String reason = '';
+    final isURL = type == 'URL' || content.startsWith('http://') || content.startsWith('https://');
     
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Content copied to clipboard')),
-    );
+    if (isURL && isSafeOverride == null) {
+      final safetyResult = await UrlSafetyUtil.checkUrlWithApi(content);
+      isSafe = safetyResult['isSafe'] ?? true;
+      reason = safetyResult['reason'] ?? 'Unknown reason';
+    }
+    
+    // Check if context is still valid
+    if (!context.mounted) return;
+    
+    // If URL is unsafe, show confirmation dialog
+    if (isURL && !isSafe) {
+      final shouldProceed = await SafetyDialogUtil.showUnsafeUrlConfirmation(
+        context: context,
+        action: 'copy',
+        url: content,
+        reason: reason,
+      );
+      
+      // Check if context is still valid after awaiting dialog
+      if (!context.mounted) return;
+      
+      if (!shouldProceed) {
+        // User canceled the operation
+        return;
+      }
+    }
+    
+    // Proceed with copying to clipboard
+    await Clipboard.setData(ClipboardData(text: content));
+    
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Content copied to clipboard')),
+      );
+    }
   }
   
-  // Share content
-  void shareContent(String content) {
+  // Share content with safety check for URLs
+  Future<void> shareContent(String content, {String? type, bool? isSafeOverride}) async {
+    // Check if this is a URL and potentially unsafe
+    bool isSafe = isSafeOverride ?? true;
+    String reason = '';
+    final isURL = type == 'URL' || content.startsWith('http://') || content.startsWith('https://');
+    
+    if (isURL && isSafeOverride == null) {
+      final safetyResult = await UrlSafetyUtil.checkUrlWithApi(content);
+      isSafe = safetyResult['isSafe'] ?? true;
+      reason = safetyResult['reason'] ?? 'Unknown reason';
+    }
+    
+    // Check if context is still valid
+    if (!context.mounted) return;
+    
+    // If URL is unsafe, show confirmation dialog
+    if (isURL && !isSafe) {
+      final shouldProceed = await SafetyDialogUtil.showUnsafeUrlConfirmation(
+        context: context,
+        action: 'share',
+        url: content,
+        reason: reason,
+      );
+      
+      // Check if context is still valid after awaiting dialog
+      if (!context.mounted) return;
+      
+      if (!shouldProceed) {
+        // User canceled the operation
+        return;
+      }
+    }
+    
+    // Proceed with sharing content
     SharePlus.instance.share(
       ShareParams(text: content),
     );

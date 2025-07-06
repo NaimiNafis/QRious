@@ -94,7 +94,7 @@ class HistoryListItem extends StatelessWidget {
               item.content,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: TextStyle(color: textColor != null ? textColor.withOpacity(0.8) : null),
+              style: TextStyle(color: textColor?.withValues(alpha: 204)),
             ),
             trailing: !inSelectionMode
                 ? IconButton(

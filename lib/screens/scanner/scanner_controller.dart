@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import '../../providers/history_provider.dart';
 import '../../screens/result/result_screen.dart';
+import '../../utils/url_safety_util.dart';
 
 class ScannerController {
   final BuildContext context;
@@ -22,12 +23,12 @@ class ScannerController {
   }
   
   // Handle barcode detection
-  void handleBarcodeDetection(
+  Future<void> handleBarcodeDetection(
     BarcodeCapture capture, 
     bool isQrMode, 
     bool isScanning,
     Function(bool) setScanning,
-  ) {
+  ) async {
     final List<Barcode> barcodes = capture.barcodes;
     
     // Filter barcodes based on selected mode
@@ -42,16 +43,26 @@ class ScannerController {
       // Determine the type based on content heuristics
       String type = determineContentType(code);
       
+      // Check safety for URLs
+      bool isSafe = true;
+      if (type == 'URL') {
+        final safetyResult = await UrlSafetyUtil.checkUrlWithApi(code);
+        isSafe = safetyResult['isSafe'] ?? true;
+      }
+      
       // Add to history
-      historyProvider.addQRCode(code, type);
+      historyProvider.addQRCode(code, type, isSafe: isSafe);
       
       // Navigate to results screen
+      if (!context.mounted) return;
+      
       Navigator.push(
         context,
         MaterialPageRoute(
           builder: (context) => ResultScreen(
             content: code,
             type: type,
+            isSafe: isSafe,
           ),
         ),
       ).then((_) {
