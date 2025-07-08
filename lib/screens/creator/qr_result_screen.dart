@@ -4,6 +4,11 @@ import '../../models/qr_create_data.dart';
 import '../../utils/app_colors.dart';
 import 'qr_decorate_screen.dart';
 import '../../utils/qr_capture_util.dart';
+import 'package:share_plus/share_plus.dart';
+import 'dart:io';
+import 'dart:ui' as ui;
+import 'package:flutter/rendering.dart';
+import 'package:path_provider/path_provider.dart';
 
 class QrResultScreen extends StatelessWidget {
   final QrCreateData qrData;
@@ -136,8 +141,47 @@ class QrResultScreen extends StatelessWidget {
                     borderRadius: BorderRadius.circular(12),
                   ),
                 ),
-                onPressed: () {
-                  // TODO: Share implementation
+                onPressed: () async {
+                  try {
+                    // Capture the QR code as an image
+                    final boundary = _previewKey.currentContext?.findRenderObject() as RenderRepaintBoundary?;
+                    if (boundary == null) {
+                      throw Exception("RepaintBoundary not found");
+                    }
+
+                    final image = await boundary.toImage(pixelRatio: 3.0);
+                    final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
+                    if (byteData == null) {
+                      throw Exception("Failed to get byte data");
+                    }
+                    
+                    final pngBytes = byteData.buffer.asUint8List();
+                    
+                    // Create a temporary file
+                    final tempDir = await getTemporaryDirectory();
+                    final file = File('${tempDir.path}/qr_share_${DateTime.now().millisecondsSinceEpoch}.png');
+                    await file.writeAsBytes(pngBytes);
+                    
+                    // Share the file
+                    await SharePlus.instance.share(
+                      ShareParams(
+                        text: 'Check out this QR code for: ${qrData.content}',
+                        files: [XFile(file.path)],
+                      ),
+                    );
+                    
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text("QR code shared successfully")),
+                      );
+                    }
+                  } catch (e) {
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text("Share failed: $e")),
+                      );
+                    }
+                  }
                 },
               ),
             ),
