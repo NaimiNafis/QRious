@@ -78,6 +78,9 @@ class _QrDecorateScreenState extends State<QrDecorateScreen>
 
   @override
   Widget build(BuildContext context) {
+    //final screenHeight = MediaQuery.of(context).size.height;
+    // 画面高さのうちプレビューに割り当てる最大高さを計算
+    //final maxPreviewHeight = screenHeight * 0.35; // 例: 画面の35%まで
     return Scaffold(
       appBar: AppBar(
         backgroundColor: AppColors.primary,
@@ -96,23 +99,46 @@ class _QrDecorateScreenState extends State<QrDecorateScreen>
           ),
         ],
       ),
-      body: Column(
+      /*body: Column(
         children: [
-          //const SizedBox(height: 16),
+          /*
           Center(child: _buildQrPreview()),
+          const SizedBox(height: 8),*/
+        Flexible(
+          flex: 0,
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              maxHeight: maxPreviewHeight,
+            ),
+            child: SingleChildScrollView(
+              child: Center(child: _buildQrPreview()),
+            ),
+          ),
+        ),
           const SizedBox(height: 8),
 
           // 上段のカテゴリタブ（コード・背景・中央・文字）
-          TabBar(
+          /*TabBar(
+            controller: _tabController,
+            tabs: _tabs,
+            labelColor: Theme.of(context).primaryColor,
+            unselectedLabelColor: Colors.grey,
+            indicatorColor: Theme.of(context).primaryColor,
+          ),*/
+
+                  Container(
+          color: Colors.white, // タブが背景に埋もれないように（必要に応じて）
+          child: TabBar(
             controller: _tabController,
             tabs: _tabs,
             labelColor: Theme.of(context).primaryColor,
             unselectedLabelColor: Colors.grey,
             indicatorColor: Theme.of(context).primaryColor,
           ),
+        ),
 
           // タブビュー
-          Flexible(
+          Expanded(
             child: TabBarView(
               controller: _tabController,
               children: [
@@ -124,6 +150,46 @@ class _QrDecorateScreenState extends State<QrDecorateScreen>
             ),
           ),
         ],
+      ),*/
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          final totalHeight = constraints.maxHeight;
+          final previewHeight = totalHeight * 0.35;
+          final tabBarHeight = 48.0; // 通常のTabBarの高さ
+          final tabViewHeight =
+              totalHeight - previewHeight - tabBarHeight - 8; // 余白含む
+
+          return Column(
+            children: [
+              SizedBox(
+                height: previewHeight,
+                child: SingleChildScrollView(
+                  child: Center(child: _buildQrPreview()),
+                ),
+              ),
+              //const SizedBox(height: 4),
+              TabBar(
+                controller: _tabController,
+                tabs: _tabs,
+                labelColor: Theme.of(context).primaryColor,
+                unselectedLabelColor: Colors.grey,
+                indicatorColor: Theme.of(context).primaryColor,
+              ),
+              SizedBox(
+                height: tabViewHeight,
+                child: TabBarView(
+                  controller: _tabController,
+                  children: [
+                    _buildCodeTab(),
+                    _buildBackgroundTab(),
+                    _buildIconTab(),
+                    _buildLabelTab(),
+                  ],
+                ),
+              ),
+            ],
+          );
+        },
       ),
     );
   }
@@ -201,10 +267,13 @@ class _QrDecorateScreenState extends State<QrDecorateScreen>
               Padding(
                 padding: const EdgeInsets.only(bottom: 8),
                 child: Center(
-                  child: Text(
-                    topText!,
-                    style: topLabelStyle,
-                    textAlign: TextAlign.center,
+                  child: SizedBox(
+                    width: 400, // 横幅を固定（←ここがポイント）
+                    child: Text(
+                      topText!,
+                      style: topLabelStyle,
+                      textAlign: TextAlign.center,
+                    ),
                   ),
                 ),
               ),
@@ -277,10 +346,13 @@ class _QrDecorateScreenState extends State<QrDecorateScreen>
               Padding(
                 padding: const EdgeInsets.only(top: 8),
                 child: Center(
-                  child: Text(
-                    bottomText!,
-                    style: bottomLabelStyle,
-                    textAlign: TextAlign.center,
+                  child: SizedBox(
+                    width: 400,
+                    child: Text(
+                      bottomText!,
+                      style: bottomLabelStyle,
+                      textAlign: TextAlign.center,
+                    ),
                   ),
                 ),
               ),
@@ -873,8 +945,8 @@ class _QrDecorateScreenState extends State<QrDecorateScreen>
                 const Text("Font Size"),
                 Slider(
                   value: topLabelStyle.fontSize ?? 16,
-                  min: 8,
-                  max: 32,
+                  min: 12,
+                  max: 36,
                   divisions: 24,
                   label: "${(topLabelStyle.fontSize ?? 16).round()}",
                   onChanged: (value) {
@@ -1046,8 +1118,8 @@ class _QrDecorateScreenState extends State<QrDecorateScreen>
                 const Text("Font Size"),
                 Slider(
                   value: bottomLabelStyle.fontSize ?? 16,
-                  min: 8,
-                  max: 32,
+                  min: 12,
+                  max: 36,
                   divisions: 24,
                   label: "${(bottomLabelStyle.fontSize ?? 16).round()}",
                   onChanged: (value) {

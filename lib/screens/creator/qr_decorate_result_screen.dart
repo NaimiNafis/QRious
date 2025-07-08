@@ -35,64 +35,42 @@ class QrDecorateResultScreen extends StatelessWidget {
       ),
       body: Stack(
         children: [
-          // 背景（上部グラデーション + 下部背景色）
-          Stack(
-            children: [
-              Column(
-                children: [
-                  Container(
-                    height: 32,
-                    width: double.infinity,
-                    color: AppColors.background,
-                  ),
-                  Container(
-                    height: gradientHeight,
-                    width: double.infinity,
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                        colors:
-                            isDark
-                                ? [Color(0xFF444444), Color(0xFF222222)]
-                                : [Colors.grey.shade300, Colors.grey.shade400],
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              Positioned.fill(
-                top: 32 + gradientHeight,
-                child: Container(color: AppColors.background),
-              ),
-            ],
+      // 背景全体にグラデーションを適用
+      Container(
+        width: double.infinity,
+        height: double.infinity,
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: isDark
+              ? [Color(0xFF444444), Color(0xFF222222)]
+              : [Colors.grey.shade300, Colors.grey.shade400],
           ),
+        ),
+      ),
 
-          // QRコードプレビュー本体
+          // QRコードプレビュー本体とスクロール対応
           SafeArea(
-            child: Padding(
+            child: SingleChildScrollView(
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-              child: Column(
-                children: [
-                  Expanded(
-                    child: Center(
-                      child: RepaintBoundary(
-                        key: _previewKey,
-                        child: QrPreviewWidget(
-                          qrData: qrData,
-                          settings: decorationSettings,
-                        ),
-                      ),
+              child: SizedBox(
+                height: gradientHeight, // 高さを指定して余白確保
+                child: Center(
+                  child: RepaintBoundary(
+                    key: _previewKey,
+                    child: QrPreviewWidget(
+                      qrData: qrData,
+                      settings: decorationSettings,
                     ),
                   ),
-                ],
+                ),
               ),
             ),
           ),
         ],
       ),
 
-      // ボタン群（SnackBarと被らないよう bottomNavigationBar に配置）
       bottomNavigationBar: Padding(
         padding: const EdgeInsets.fromLTRB(24, 12, 24, 24),
         child: Column(
@@ -106,21 +84,13 @@ class QrDecorateResultScreen extends StatelessWidget {
                   final path = await captureAndSave(_previewKey);
                   if (context.mounted) {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text("Saved: $path"),
-                        //behavior: SnackBarBehavior.floating,
-                        //margin: const EdgeInsets.only(bottom: 20, left: 24, right: 24),
-                      ),
+                      SnackBar(content: Text("Saved: $path")),
                     );
                   }
                 } catch (e) {
                   if (context.mounted) {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text("Save failed: $e"),
-                        //behavior: SnackBarBehavior.floating,
-                        //margin: const EdgeInsets.only(bottom: 20, left: 24, right: 24),
-                      ),
+                      SnackBar(content: Text("Save failed: $e")),
                     );
                   }
                 }
@@ -139,9 +109,9 @@ class QrDecorateResultScreen extends StatelessWidget {
               width: double.infinity,
               height: 56,
               child: OutlinedButton.icon(
-                icon: const Icon(Icons.home, color: Colors.black),
+                icon: const Icon(Icons.refresh, color: Colors.black),
                 label: const Text(
-                  "Back to Home",
+                  "Back to Top",
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
