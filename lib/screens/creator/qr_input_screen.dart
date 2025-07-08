@@ -22,7 +22,7 @@ class _QrInputScreenState extends State<QrInputScreen> {
   void initState() {
     super.initState();
     if (widget.qrType == 'URL') {
-      input1.text = 'http://';
+      input1.text = 'https://';
       input1.selection = TextSelection.fromPosition(
         TextPosition(offset: input1.text.length),
       );
@@ -51,31 +51,24 @@ class _QrInputScreenState extends State<QrInputScreen> {
         ),
       ),
       bottomNavigationBar: Padding(
-        padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            SizedBox(
-              height: 56,
-              child: ElevatedButton.icon(
-                icon: Icon(Icons.qr_code, color: AppColors.textLight),
-                label: Text(
-                  "Generate QR Code",
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                ),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary,
-                  foregroundColor: AppColors.textLight,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-                onPressed: _onCreatePressed,
+        padding: const EdgeInsets.fromLTRB(16, 12, 16, 50),
+        child: SizedBox(
+          height: 56,
+          child: ElevatedButton.icon(
+            icon: Icon(Icons.qr_code, color: AppColors.textLight),
+            label: Text(
+              "Generate QR Code",
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primary,
+              foregroundColor: AppColors.textLight,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
               ),
             ),
-            const SizedBox(height: 204), // ここが大きな空白。位置調整用。
-          ],
+            onPressed: _onCreatePressed,
+          ),
         ),
       ),
     );
