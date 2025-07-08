@@ -41,11 +41,13 @@ class _QrInputScreenState extends State<QrInputScreen> {
         ),
         iconTheme: IconThemeData(color: AppColors.textLight),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [..._buildInputsForType(widget.qrType)],
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [..._buildInputsForType(widget.qrType)],
+          ),
         ),
       ),
       bottomNavigationBar: Padding(
@@ -72,7 +74,7 @@ class _QrInputScreenState extends State<QrInputScreen> {
                 onPressed: _onCreatePressed,
               ),
             ),
-            const SizedBox(height: 204),
+            const SizedBox(height: 204), // ここが大きな空白。位置調整用。
           ],
         ),
       ),
@@ -161,10 +163,9 @@ class _QrInputScreenState extends State<QrInputScreen> {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder:
-            (_) => QrResultScreen(
-              qrData: QrCreateData(type: widget.qrType, content: qrData),
-            ),
+        builder: (_) => QrResultScreen(
+          qrData: QrCreateData(type: widget.qrType, content: qrData),
+        ),
       ),
     );
   }

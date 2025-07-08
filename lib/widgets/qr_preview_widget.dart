@@ -44,10 +44,13 @@ class QrPreviewWidget extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.only(bottom: 8),
             child: Center(
-              child: Text(
-                settings.topText!,
-                style: settings.topLabelStyle,
-                textAlign: TextAlign.center,
+              child: SizedBox(
+                width: 400,
+                child: Text(
+                  settings.topText!,
+                  style: settings.topLabelStyle,
+                  textAlign: TextAlign.center,
+                ),
               ),
             ),
           ),
@@ -114,10 +117,13 @@ class QrPreviewWidget extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.only(top: 8),
             child: Center(
-              child: Text(
-                settings.bottomText!,
-                style: settings.bottomLabelStyle,
-                textAlign: TextAlign.center,
+              child: SizedBox(
+                width: 400,
+                child: Text(
+                  settings.bottomText!,
+                  style: settings.bottomLabelStyle,
+                  textAlign: TextAlign.center,
+                ),
               ),
             ),
           ),

@@ -23,31 +23,36 @@ class QrResultScreen extends StatelessWidget {
         ),
         iconTheme: IconThemeData(color: AppColors.textLight),
       ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            RepaintBoundary(
-              key: _previewKey,
-              child: QrImageView(
-                data: qrData.content,
-                version: QrVersions.auto,
-                size: 240,
-                backgroundColor: Colors.white,
-              ),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(24),
+          child: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                RepaintBoundary(
+                  key: _previewKey,
+                  child: QrImageView(
+                    data: qrData.content,
+                    version: QrVersions.auto,
+                    size: 240,
+                    backgroundColor: Colors.white,
+                  ),
+                ),
+                const SizedBox(height: 20),
+                Text(
+                  "Type: ${qrData.type}",
+                  style: TextStyle(color: AppColors.textDark, fontSize: 16),
+                ),
+                Text(
+                  "Content: ${qrData.content}",
+                  style: TextStyle(color: AppColors.textDark, fontSize: 14),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 40),
+              ],
             ),
-            const SizedBox(height: 20),
-            Text(
-              "Type: ${qrData.type}",
-              style: TextStyle(color: AppColors.textDark, fontSize: 16),
-            ),
-            Text(
-              "Content: ${qrData.content}",
-              style: TextStyle(color: AppColors.textDark, fontSize: 14),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 40),
-          ],
+          ),
         ),
       ),
       bottomNavigationBar: Padding(
@@ -140,14 +145,13 @@ class QrResultScreen extends StatelessWidget {
             SizedBox(
               height: 56,
               child: ElevatedButton.icon(
-                icon: Icon(Icons.home, color: Colors.black),
+                icon: Icon(Icons.refresh, color: Colors.black),
                 label: Text(
-                  "Back to Home",
+                  "Back to Top",
                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black),
                 ),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.grey,
-                  //foregroundColor: AppColors.textLight,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
