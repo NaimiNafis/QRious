@@ -1,47 +1,51 @@
-import 'dart:io';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
-import 'package:path_provider/path_provider.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:image_gallery_saver/image_gallery_saver.dart';
 
-Future<String> captureAndSave(
-  GlobalKey repaintKey, {
-  String fileName = 'qr_capture.png',
-}) async {
+Future<String> captureAndSave(GlobalKey repaintKey) async {
   try {
-    final boundary =
-        repaintKey.currentContext?.findRenderObject() as RenderRepaintBoundary?;
+    final boundary = repaintKey.currentContext?.findRenderObject() as RenderRepaintBoundary?;
     if (boundary == null) {
-      throw Exception("RepaintBoundaryが見つかりません");
+      throw Exception("RepaintBoundary not found");
     }
 
-    final BuildContext? context = repaintKey.currentContext;
-    final double pixelRatio = context != null 
-        ? MediaQuery.of(context).devicePixelRatio 
-        : 1.0;
+    final context = repaintKey.currentContext;
+    final pixelRatio = context != null ? MediaQuery.of(context).devicePixelRatio : 1.0;
 
-    final ui.Image image = await boundary.toImage(
-      pixelRatio: pixelRatio,
-    );
-    final ByteData? byteData = await image.toByteData(
-      format: ui.ImageByteFormat.png,
-    );
-
+    final image = await boundary.toImage(pixelRatio: pixelRatio);
+    final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
     if (byteData == null) {
-      throw Exception("画像のByteData取得に失敗");
+      throw Exception("Failed to get byte data");
     }
 
-    final Uint8List pngBytes = byteData.buffer.asUint8List();
+    final pngBytes = byteData.buffer.asUint8List();
 
-    final directory = await getApplicationDocumentsDirectory();
-    final path = '${directory.path}/$fileName';
+    // Request permission
+    final status = await Permission.storage.request();
+    if (!status.isGranted) {
+      throw Exception("Permission denied");
+    }
 
-    final file = File(path);
-    await file.writeAsBytes(pngBytes);
+    // Save to gallery
+    final result = await ImageGallerySaver.saveImage(
+      Uint8List.fromList(pngBytes),
+      quality: 100,
+      name: 'qr_capture_${DateTime.now().millisecondsSinceEpoch}',
+    );
 
+    if (result == null || result['isSuccess'] != true) {
+      throw Exception("Failed to save image");
+    }
+
+    // ✅ ここでパスを取得して返す
+    final path = result['filePath'] ?? 'unknown';
     return path;
+
   } catch (e) {
+    //print("Error: $e");
     rethrow;
   }
 }
