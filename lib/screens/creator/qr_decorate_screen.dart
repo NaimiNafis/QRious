@@ -4,7 +4,6 @@ import '../../models/qr_create_data.dart';
 import '../../models/qr_decoration_settings.dart';
 import 'color_selector.dart';
 import 'qr_decorate_result_screen.dart';
-//import 'package:flutter/cupertino.dart';
 import 'dart:io';
 import 'package:image_picker/image_picker.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -69,18 +68,15 @@ class _QrDecorateScreenState extends State<QrDecorateScreen>
     super.dispose();
   }
 
-  final List<Tab> _tabs = const [
-    Tab(text: "コード"),
-    Tab(text: "背景"),
-    Tab(text: "アイコン"), //元"中央"
-    Tab(text: "ラベル"), //元"文字"
+  final List<Tab> _tabs = [
+    const Tab(icon: Icon(Icons.qr_code), text: "Code"),
+    const Tab(icon: Icon(Icons.image), text: "BG Style"),
+    const Tab(icon: Icon(Icons.insert_emoticon), text: "Icon"),
+    const Tab(icon: Icon(Icons.title), text: "Label"),
   ];
 
   @override
   Widget build(BuildContext context) {
-    //final screenHeight = MediaQuery.of(context).size.height;
-    // 画面高さのうちプレビューに割り当てる最大高さを計算
-    //final maxPreviewHeight = screenHeight * 0.35; // 例: 画面の35%まで
     return Scaffold(
       appBar: AppBar(
         backgroundColor: AppColors.primary,
@@ -90,41 +86,69 @@ class _QrDecorateScreenState extends State<QrDecorateScreen>
         ),
         iconTheme: IconThemeData(color: AppColors.textLight),
         actions: [
-          TextButton(
-            onPressed: () {
-              // 「生成」ボタンの処理
-              _onSave();
-            },
-            child: const Text("保存", style: TextStyle(color: Colors.white)),
+          Padding(
+            padding: const EdgeInsets.only(right: 4.0),
+            child: TextButton.icon(
+              onPressed: _onSave,
+              icon: Icon(Icons.visibility, color: AppColors.textLight),
+              label: Text(
+                "Preview",
+                style: TextStyle(
+                  color: AppColors.textLight,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
           ),
         ],
       ),
       body: LayoutBuilder(
         builder: (context, constraints) {
           final totalHeight = constraints.maxHeight;
+          final tabBarHeight = 48.0; // タブバー高さの目安
           final previewHeight = totalHeight * 0.35;
-          final tabBarHeight = 48.0; // 通常のTabBarの高さ
-          final tabViewHeight =
-              totalHeight - previewHeight - tabBarHeight - 8; // 余白含む
 
           return Column(
             children: [
+              // プレビュー：高さ最大 previewHeight でスクロール可能に
               SizedBox(
                 height: previewHeight,
                 child: SingleChildScrollView(
+                  physics: BouncingScrollPhysics(),
                   child: Center(child: _buildQrPreview()),
                 ),
               ),
-              //const SizedBox(height: 4),
-              TabBar(
-                controller: _tabController,
-                tabs: _tabs,
-                labelColor: Theme.of(context).primaryColor,
-                unselectedLabelColor: Colors.grey,
-                indicatorColor: Theme.of(context).primaryColor,
-              ),
+
+              // タブバー（スクリーン幅いっぱいに）
               SizedBox(
-                height: tabViewHeight,
+                height: tabBarHeight,
+                child: TabBar(
+                  controller: _tabController,
+                  tabs: _tabs,
+                  labelColor: Colors.white,
+                  unselectedLabelColor:
+                      Theme.of(context).brightness == Brightness.dark
+                          ? Colors.white54
+                          : Colors.black54,
+                  labelStyle: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
+                  indicatorSize: TabBarIndicatorSize.tab,
+                  indicator: BoxDecoration(
+                    color: Theme.of(context).primaryColor,
+                    borderRadius: const BorderRadius.only(
+                      topLeft: Radius.circular(12),
+                      topRight: Radius.circular(12),
+                      bottomLeft: Radius.zero,
+                      bottomRight: Radius.zero,
+                    ),
+                  ),
+                ),
+              ),
+
+              // 残りはタブビューで埋める
+              Expanded(
                 child: TabBarView(
                   controller: _tabController,
                   children: [
@@ -312,19 +336,46 @@ class _QrDecorateScreenState extends State<QrDecorateScreen>
 
   //コード部分のタブ
   Widget _buildCodeTab() {
-    final subTabs = const [Tab(text: "Color"), Tab(text: "Pixel Shape")];
+    final subTabs = const [
+      Tab(icon: Icon(Icons.color_lens, size: 18), text: "Color"),
+      Tab(icon: Icon(Icons.grid_on, size: 18), text: "Pixel Shape"),
+    ];
 
     return DefaultTabController(
       length: subTabs.length,
       child: Column(
         children: [
-          const SizedBox(height: 8),
-          TabBar(
-            tabs: subTabs,
-            labelColor: Theme.of(context).primaryColor,
-            unselectedLabelColor: Colors.grey,
-            indicatorColor: Theme.of(context).primaryColor,
+          const SizedBox(height: 0.25),
+          Container(
+            height: 44,
+            width: double.infinity,
+            decoration: BoxDecoration(
+              color:
+                  Theme.of(context).brightness == Brightness.dark
+                      ? Colors.grey[850]
+                      : Colors.grey[200],
+              //borderRadius: BorderRadius.circular(12),
+            ),
+            child: TabBar(
+              tabs: subTabs,
+              labelColor: Colors.white,
+              unselectedLabelColor: Theme.of(
+                context,
+              ).primaryColor.withAlpha((0.8 * 255).round()),
+              labelStyle: const TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 16,
+              ),
+              indicator: BoxDecoration(
+                color: Theme.of(context).primaryColor,
+                //borderRadius: BorderRadius.circular(12),
+              ),
+              indicatorSize: TabBarIndicatorSize.tab,
+              dividerColor: Colors.transparent,
+            ),
           ),
+          const SizedBox(height: 12),
+          // --- 中身 ---
           Expanded(
             child: TabBarView(
               children: [_buildColorSettings(), _buildPixelShapeSettings()],
@@ -351,35 +402,32 @@ class _QrDecorateScreenState extends State<QrDecorateScreen>
   }
 
   Widget _buildPixelShapeSettings() {
-    return Padding(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          const Text(
-            "",
-            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-          ),
-          const SizedBox(height: 16),
-
-          Wrap(
-            spacing: 32,
-            runSpacing: 24,
-            alignment: WrapAlignment.center, // 中央揃え
-            children: [
-              _buildPixelShapeChoice(
-                label: "Square",
-                value: 'square',
-                isSelected: selectedPixelShape == 'square',
-              ),
-              _buildPixelShapeChoice(
-                label: "Circle",
-                value: 'circle',
-                isSelected: selectedPixelShape == 'circle',
-              ),
-            ],
-          ),
-        ],
+    return SafeArea(
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            const SizedBox(height: 16),
+            Wrap(
+              spacing: 32,
+              runSpacing: 24,
+              alignment: WrapAlignment.center,
+              children: [
+                _buildPixelShapeChoice(
+                  label: "Square",
+                  value: 'square',
+                  isSelected: selectedPixelShape == 'square',
+                ),
+                _buildPixelShapeChoice(
+                  label: "Circle",
+                  value: 'circle',
+                  isSelected: selectedPixelShape == 'circle',
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -396,7 +444,7 @@ class _QrDecorateScreenState extends State<QrDecorateScreen>
         });
       },
       child: Container(
-        width: 100,
+        width: 120,
         padding: const EdgeInsets.all(8),
         decoration: BoxDecoration(
           color: isSelected ? AppColors.primary : Colors.transparent,
@@ -407,8 +455,8 @@ class _QrDecorateScreenState extends State<QrDecorateScreen>
           mainAxisSize: MainAxisSize.min,
           children: [
             SizedBox(
-              width: 64,
-              height: 64,
+              width: 72,
+              height: 72,
               child: QrImageView(
                 data: "sample",
                 size: 64,
@@ -444,19 +492,41 @@ class _QrDecorateScreenState extends State<QrDecorateScreen>
 
   //背景部分のタブ
   Widget _buildBackgroundTab() {
-    final subTabs = const [Tab(text: "色"), Tab(text: "スタイル")];
+    final subTabs = const [
+      Tab(icon: Icon(Icons.color_lens, size: 18), text: "Color"),
+      Tab(icon: Icon(Icons.texture, size: 18), text: "Style"),
+    ];
 
     return DefaultTabController(
       length: subTabs.length,
       child: Column(
         children: [
-          const SizedBox(height: 8),
-          TabBar(
-            tabs: subTabs,
-            labelColor: Theme.of(context).primaryColor,
-            unselectedLabelColor: Colors.grey,
-            indicatorColor: Theme.of(context).primaryColor,
+          const SizedBox(height: 0.25), // 微妙に下の余白を減らす
+          Container(
+            height: 44,
+            width: double.infinity,
+            decoration: BoxDecoration(
+              color:
+                  Theme.of(context).brightness == Brightness.dark
+                      ? Colors.grey[850]
+                      : Colors.grey[200],
+            ),
+            child: TabBar(
+              tabs: subTabs,
+              labelColor: Colors.white,
+              unselectedLabelColor: Theme.of(
+                context,
+              ).primaryColor.withAlpha((0.8 * 255).round()),
+              labelStyle: const TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 16,
+              ),
+              indicator: BoxDecoration(color: Theme.of(context).primaryColor),
+              indicatorSize: TabBarIndicatorSize.tab,
+              dividerColor: Colors.transparent,
+            ),
           ),
+          const SizedBox(height: 12),
           Expanded(
             child: TabBarView(
               children: [
@@ -486,39 +556,94 @@ class _QrDecorateScreenState extends State<QrDecorateScreen>
   }
 
   Widget _buildBackgroundStyleSettings() {
-    return Padding(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text("背景スタイルを選択"),
-          Wrap(
-            spacing: 8,
-            children: [
-              ChoiceChip(
-                label: const Text("通常"),
-                selected: backgroundStyle == "normal",
-                onSelected: (_) {
-                  setState(() => backgroundStyle = "normal");
-                },
+    return SafeArea(
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            const SizedBox(height: 16),
+            Wrap(
+              spacing: 32,
+              runSpacing: 24,
+              alignment: WrapAlignment.center,
+              children: [
+                _buildBackgroundChoice(
+                  label: "Square",
+                  value: "normal",
+                  child: Container(
+                    width: 64,
+                    height: 64,
+                    color: Colors.grey[300],
+                  ),
+                ),
+                _buildBackgroundChoice(
+                  label: "Rounded",
+                  value: "rounded",
+                  child: Container(
+                    width: 64,
+                    height: 64,
+                    decoration: BoxDecoration(
+                      color: Colors.grey[300],
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                  ),
+                ),
+                _buildBackgroundChoice(
+                  label: "Transparent",
+                  value: "transparent",
+                  child: Container(
+                    width: 64,
+                    height: 64,
+                    decoration: BoxDecoration(
+                      color: const Color.fromRGBO(200, 200, 200, 0.3),
+                      border: Border.all(color: Colors.grey),
+                    ),
+                    child: const Icon(Icons.blur_on),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBackgroundChoice({
+    required String label,
+    required String value,
+    required Widget child,
+  }) {
+    final bool isSelected = backgroundStyle == value;
+
+    return GestureDetector(
+      onTap: () {
+        setState(() => backgroundStyle = value);
+      },
+      child: Container(
+        width: 120,
+        padding: const EdgeInsets.all(8),
+        decoration: BoxDecoration(
+          color: isSelected ? AppColors.primary : Colors.transparent,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: AppColors.primary, width: 1.5),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            SizedBox(width: 72, height: 72, child: child),
+            const SizedBox(height: 8),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 14,
+                color: isSelected ? Colors.white : AppColors.primary,
+                fontWeight: FontWeight.bold,
               ),
-              ChoiceChip(
-                label: const Text("丸形"),
-                selected: backgroundStyle == "rounded",
-                onSelected: (_) {
-                  setState(() => backgroundStyle = "rounded");
-                },
-              ),
-              ChoiceChip(
-                label: const Text("透過"),
-                selected: backgroundStyle == "transparent",
-                onSelected: (_) {
-                  setState(() => backgroundStyle = "transparent");
-                },
-              ),
-            ],
-          ),
-        ],
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -526,22 +651,41 @@ class _QrDecorateScreenState extends State<QrDecorateScreen>
   //中央部分のタブ
   Widget _buildIconTab() {
     final subTabs = const [
-      Tab(text: "Icon"),
-      Tab(text: "Color"),
-      Tab(text: "Image"),
+      Tab(icon: Icon(Icons.insert_emoticon, size: 18), text: "Icon"),
+      Tab(icon: Icon(Icons.color_lens, size: 18), text: "Color"),
+      Tab(icon: Icon(Icons.image, size: 18), text: "Image"),
     ];
 
     return DefaultTabController(
       length: subTabs.length,
       child: Column(
         children: [
-          const SizedBox(height: 8),
-          TabBar(
-            tabs: subTabs,
-            labelColor: Theme.of(context).primaryColor,
-            unselectedLabelColor: Colors.grey,
-            indicatorColor: Theme.of(context).primaryColor,
+          const SizedBox(height: 0.25), // 微調整
+          Container(
+            height: 44,
+            width: double.infinity,
+            decoration: BoxDecoration(
+              color:
+                  Theme.of(context).brightness == Brightness.dark
+                      ? Colors.grey[850]
+                      : Colors.grey[200],
+            ),
+            child: TabBar(
+              tabs: subTabs,
+              labelColor: Colors.white,
+              unselectedLabelColor: Theme.of(
+                context,
+              ).primaryColor.withAlpha((0.8 * 255).round()),
+              labelStyle: const TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 16,
+              ),
+              indicator: BoxDecoration(color: Theme.of(context).primaryColor),
+              indicatorSize: TabBarIndicatorSize.tab,
+              dividerColor: Colors.transparent,
+            ),
           ),
+          const SizedBox(height: 12),
           Expanded(
             child: TabBarView(
               children: [
@@ -592,7 +736,7 @@ class _QrDecorateScreenState extends State<QrDecorateScreen>
                       border: Border.all(
                         color:
                             isSelected
-                                ? Colors.blueAccent
+                                ? AppColors.primary
                                 : Colors.grey.shade300,
                         width: 2,
                       ),
@@ -692,9 +836,9 @@ class _QrDecorateScreenState extends State<QrDecorateScreen>
             child: const Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(Icons.clear, size: 18),
+                Icon(Icons.close),
                 SizedBox(width: 4),
-                Text("Delete", style: TextStyle(fontWeight: FontWeight.bold)),
+                Text("Deselect", style: TextStyle(fontWeight: FontWeight.bold)),
               ],
             ),
           ),
@@ -938,109 +1082,150 @@ class _QrDecorateScreenState extends State<QrDecorateScreen>
   }
 
   Widget _buildImageSelection() {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        const SizedBox(height: 16),
-        // タブ内のプレビューは常に表示（チェック状態に関係なく）
-        if (_selectedImage != null)
-          SizedBox(
-            width: 150,
-            height: 150,
-            child: FittedBox(
-              fit: BoxFit.contain,
-              child: Image.file(_selectedImage!),
-            ),
-          )
-        else
-          const Text('No image selected.'),
-
-        const SizedBox(height: 16),
-
-        // チェックボックスはQRコード上の画像表示切り替え用
-        if (_selectedImage != null)
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Checkbox(
-                value: _isImageVisible,
-                onChanged: (checked) {
-                  setState(() {
-                    _isImageVisible = checked ?? false;
-                    if (_isImageVisible) {
-                      _selectedIcon = null; // 表示ON時にアイコン選択解除
-                    }
-                  });
-                },
-              ),
-              const Text('Use this image on QR Code'),
-            ],
-          ),
-
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
+    return SafeArea(
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
           children: [
-            OutlinedButton(
-              onPressed: _pickImage,
-              style: OutlinedButton.styleFrom(
-                foregroundColor: Colors.white,
-                backgroundColor: Theme.of(context).primaryColor,
-                side: BorderSide(color: Theme.of(context).primaryColor),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 8,
-                ),
-              ),
-              child: const Text('Select Image'),
-            ),
-            const SizedBox(width: 12),
             if (_selectedImage != null)
-              OutlinedButton(
-                onPressed: () {
-                  setState(() {
-                    _selectedImage = null;
-                    _isImageVisible = false;
-                  });
-                },
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: Colors.white,
-                  backgroundColor: Colors.red,
-                  side: const BorderSide(color: Colors.red),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+              SizedBox(
+                width: 150,
+                height: 150,
+                child: FittedBox(
+                  fit: BoxFit.contain,
+                  child: Image.file(_selectedImage!),
+                ),
+              )
+            else
+              const Text('No image selected.'),
+            const SizedBox(height: 16),
+            if (_selectedImage != null)
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Checkbox(
+                    value: _isImageVisible,
+                    onChanged: (checked) {
+                      setState(() {
+                        _isImageVisible = checked ?? false;
+                        if (_isImageVisible) {
+                          _selectedIcon = null;
+                        }
+                      });
+                    },
                   ),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 8,
+                  const Text('Show this image on QR code'),
+                ],
+              ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                // Select Image ボタン
+                OutlinedButton(
+                  onPressed: _pickImage,
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: Colors.white,
+                    backgroundColor: Theme.of(context).primaryColor,
+                    side: BorderSide(color: Theme.of(context).primaryColor),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 8,
+                    ),
+                  ),
+                  child: const Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.image),
+                      SizedBox(width: 4),
+                      Text(
+                        'Select Image',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                    ],
                   ),
                 ),
-                child: const Text('Delete'),
-              ),
+                const SizedBox(width: 12),
+                if (_selectedImage != null)
+                  OutlinedButton(
+                    onPressed: () {
+                      setState(() {
+                        _selectedImage = null;
+                        _isImageVisible = false;
+                      });
+                    },
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: Colors.white,
+                      backgroundColor: Colors.red,
+                      side: const BorderSide(color: Colors.red),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 8,
+                      ),
+                    ),
+                    child: const Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.delete),
+                        SizedBox(width: 4),
+                        Text(
+                          'Delete',
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                      ],
+                    ),
+                  ),
+              ],
+            ),
           ],
         ),
-        const SizedBox(height: 16),
-      ],
+      ),
     );
   }
 
   //上下文字のタブ
   Widget _buildLabelTab() {
-    final subTabs = const [Tab(text: "Top Label"), Tab(text: "Bottom Label")];
+    final subTabs = const [
+      Tab(icon: Icon(Icons.text_fields, size: 18), text: "Top Label"),
+      Tab(icon: Icon(Icons.text_fields, size: 18), text: "Bottom Label"),
+    ];
 
     return DefaultTabController(
       length: subTabs.length,
       child: Column(
         children: [
-          const SizedBox(height: 8),
-          TabBar(
-            tabs: subTabs,
-            labelColor: Theme.of(context).primaryColor,
-            unselectedLabelColor: Colors.grey,
-            indicatorColor: Theme.of(context).primaryColor,
+          const SizedBox(height: 0.25), // 微調整
+          Container(
+            height: 44,
+            width: double.infinity,
+            decoration: BoxDecoration(
+              color:
+                  Theme.of(context).brightness == Brightness.dark
+                      ? Colors.grey[850]
+                      : Colors.grey[200],
+            ),
+            child: TabBar(
+              tabs: subTabs,
+              labelColor: Colors.white,
+              unselectedLabelColor: Theme.of(
+                context,
+              ).primaryColor.withAlpha((0.8 * 255).round()), // 安全な不透明度指定
+              labelStyle: const TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 16,
+              ),
+              indicator: BoxDecoration(color: Theme.of(context).primaryColor),
+              indicatorSize: TabBarIndicatorSize.tab,
+              dividerColor: Colors.transparent,
+            ),
           ),
+          const SizedBox(height: 12),
           Expanded(
             child: TabBarView(
               children: [_buildTopLabelInput(), _buildBottomLabelInput()],
@@ -1142,7 +1327,7 @@ class _QrDecorateScreenState extends State<QrDecorateScreen>
                     Icon(Icons.text_fields, size: 20),
                     SizedBox(width: 4),
                     Text(
-                      "Top Label Text (max 20 characters)",
+                      "Top Label Text",
                       style: TextStyle(fontWeight: FontWeight.bold),
                     ),
                   ],
@@ -1172,7 +1357,17 @@ class _QrDecorateScreenState extends State<QrDecorateScreen>
                           borderRadius: BorderRadius.circular(12),
                         ),
                       ),
-                      child: const Text('Apply'),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(Icons.check_circle),
+                          const SizedBox(width: 4),
+                          const Text(
+                            'Apply',
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                        ],
+                      ),
                     ),
                     const SizedBox(width: 12),
                     OutlinedButton(
@@ -1191,7 +1386,17 @@ class _QrDecorateScreenState extends State<QrDecorateScreen>
                           borderRadius: BorderRadius.circular(12),
                         ),
                       ),
-                      child: const Text('Delete'),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(Icons.delete),
+                          const SizedBox(width: 4),
+                          const Text(
+                            'Delete',
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                        ],
+                      ),
                     ),
                   ],
                 ),
@@ -1351,7 +1556,7 @@ class _QrDecorateScreenState extends State<QrDecorateScreen>
                     Icon(Icons.text_fields, size: 20),
                     SizedBox(width: 4),
                     Text(
-                      "Bottom Label Text (max 20 characters)",
+                      "Bottom Label Text",
                       style: TextStyle(fontWeight: FontWeight.bold),
                     ),
                   ],
@@ -1381,7 +1586,17 @@ class _QrDecorateScreenState extends State<QrDecorateScreen>
                           borderRadius: BorderRadius.circular(12),
                         ),
                       ),
-                      child: const Text('Apply'),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(Icons.check_circle),
+                          const SizedBox(width: 4),
+                          const Text(
+                            'Apply',
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                        ],
+                      ),
                     ),
                     const SizedBox(width: 12),
                     OutlinedButton(
@@ -1400,7 +1615,17 @@ class _QrDecorateScreenState extends State<QrDecorateScreen>
                           borderRadius: BorderRadius.circular(12),
                         ),
                       ),
-                      child: const Text('Delete'),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(Icons.delete),
+                          const SizedBox(width: 4),
+                          const Text(
+                            'Delete',
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                        ],
+                      ),
                     ),
                   ],
                 ),
