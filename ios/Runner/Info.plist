@@ -30,6 +30,8 @@
 	<string>This app needs camera access to scan QR codes.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>This app needs photo library access to read QR codes from existing images.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>This app needs permission to save QR code images to your photo library.</string>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
 	<key>UILaunchStoryboardName</key>

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../../models/qr_create_data.dart';
 import 'qr_result_screen.dart';
+import '../../utils/app_colors.dart';
+import 'package:flutter/services.dart';
 
 class QrInputScreen extends StatefulWidget {
   final String qrType;
@@ -17,70 +19,139 @@ class _QrInputScreenState extends State<QrInputScreen> {
   final TextEditingController input3 = TextEditingController();
 
   @override
+  void initState() {
+    super.initState();
+    if (widget.qrType == 'URL') {
+      input1.text = 'http://';
+      input1.selection = TextSelection.fromPosition(
+        TextPosition(offset: input1.text.length),
+      );
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('${widget.qrType} の入力')),
+      backgroundColor: AppColors.background,
+      appBar: AppBar(
+        backgroundColor: AppColors.primary,
+        title: Text(
+          'Enter ${widget.qrType} Info',
+          style: TextStyle(color: AppColors.textLight),
+        ),
+        iconTheme: IconThemeData(color: AppColors.textLight),
+      ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [..._buildInputsForType(widget.qrType)],
+        ),
+      ),
+      bottomNavigationBar: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            ..._buildInputsForType(widget.qrType),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: _onCreatePressed,
-              child: const Text("QRコードを生成"),
+            SizedBox(
+              height: 56,
+              child: ElevatedButton.icon(
+                icon: Icon(Icons.qr_code, color: AppColors.textLight),
+                label: Text(
+                  "Generate QR Code",
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primary,
+                  foregroundColor: AppColors.textLight,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                onPressed: _onCreatePressed,
+              ),
             ),
+            const SizedBox(height: 204),
           ],
         ),
       ),
     );
   }
 
+  Widget _styledTextField(
+    String label,
+    TextEditingController controller, {
+    TextInputType keyboardType = TextInputType.text,
+    List<TextInputFormatter>? inputFormatters,
+  }) {
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+      decoration: BoxDecoration(
+        color: AppColors.cardBackground,
+        borderRadius: BorderRadius.circular(8),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.shadow,
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: TextField(
+        controller: controller,
+        keyboardType: keyboardType,
+        inputFormatters: inputFormatters,
+        decoration: InputDecoration(
+          labelText: label,
+          border: InputBorder.none,
+          labelStyle: TextStyle(color: AppColors.textMuted),
+        ),
+        style: TextStyle(color: AppColors.textDark),
+      ),
+    );
+  }
+
   List<Widget> _buildInputsForType(String type) {
     switch (type) {
-      case 'URL':
-        return [
-          TextField(
-            controller: input1,
-            decoration: const InputDecoration(labelText: 'URLを入力'),
-          ),
-        ];
       case 'Wi-Fi':
         return [
-          TextField(
-            controller: input1,
-            decoration: const InputDecoration(labelText: 'SSID'),
-          ),
-          TextField(
-            controller: input2,
-            decoration: const InputDecoration(labelText: 'パスワード'),
-          ),
+          _styledTextField('SSID', input1),
+          _styledTextField('Password', input2),
         ];
-      case '電話番号':
+      case 'Phone Number':
         return [
-          TextField(
-            controller: input1,
-            decoration: const InputDecoration(labelText: '電話番号を入力'),
+          _styledTextField(
+            'Enter phone number',
+            input1,
+            keyboardType: TextInputType.number,
+            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
           ),
         ];
+      case 'URL':
+        return [_styledTextField('Enter URL', input1)];
       default:
-        return [
-          TextField(
-            controller: input1,
-            decoration: const InputDecoration(labelText: '内容を入力'),
-          ),
-        ];
+        return [_styledTextField('Enter text', input1)];
     }
   }
 
   void _onCreatePressed() {
+    if (input1.text.trim().isEmpty ||
+        (widget.qrType == 'Wi-Fi' && input2.text.trim().isEmpty)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please fill in all required fields')),
+      );
+      return;
+    }
+
     String qrData;
 
     switch (widget.qrType) {
       case 'Wi-Fi':
         qrData = 'WIFI:T:WPA;S:${input1.text};P:${input2.text};;';
         break;
-      case '電話番号':
+      case 'Phone Number':
         qrData = 'tel:${input1.text}';
         break;
       default:
@@ -90,9 +161,10 @@ class _QrInputScreenState extends State<QrInputScreen> {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (_) => QrResultScreen(
-          qrData: QrCreateData(type: widget.qrType, content: qrData),
-        ),
+        builder:
+            (_) => QrResultScreen(
+              qrData: QrCreateData(type: widget.qrType, content: qrData),
+            ),
       ),
     );
   }

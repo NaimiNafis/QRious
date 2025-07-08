@@ -90,7 +90,7 @@ class _ColorSelectorState extends State<ColorSelector> {
           pickerColor: _currentColor,
           onColorChanged: _onColorChanged,
           enableAlpha: false,
-          labelTypes: const [ColorLabelType.rgb],
+          labelTypes: const [],
           pickerAreaHeightPercent: 0.8,
           portraitOnly: true,
         ),

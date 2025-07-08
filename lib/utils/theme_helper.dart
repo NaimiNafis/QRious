@@ -50,7 +50,7 @@ class ThemeHelper {
         color: Color(0xFF673AB7),
         elevation: 0,
       ),
-      cardTheme: CardTheme(
+      cardTheme: CardThemeData(
         color: Colors.white,
         elevation: 2,
         shape: RoundedRectangleBorder(
@@ -89,7 +89,7 @@ class ThemeHelper {
         color: Color(0xFF1E1E1E),
         elevation: 0,
       ),
-      cardTheme: CardTheme(
+      cardTheme: CardThemeData(
         color: const Color(0xFF1E1E1E),
         elevation: 2,
         shape: RoundedRectangleBorder(

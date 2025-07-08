@@ -8,6 +8,7 @@ import 'package:flutter/cupertino.dart';
 import 'dart:io';
 import 'package:image_picker/image_picker.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../utils/app_colors.dart';
 
 class QrDecorateScreen extends StatefulWidget {
   final QrCreateData qrData;
@@ -40,10 +41,7 @@ class _QrDecorateScreenState extends State<QrDecorateScreen>
   String _tempTopText = "";
   String _tempBottomText = "";
 
-  TextStyle topLabelStyle = const TextStyle(
-    fontSize: 16, 
-    color: Colors.black
-    );
+  TextStyle topLabelStyle = const TextStyle(fontSize: 16, color: Colors.black);
   String selectedTopFont = 'Roboto';
   TextStyle bottomLabelStyle = const TextStyle(
     fontSize: 16,
@@ -82,11 +80,12 @@ class _QrDecorateScreenState extends State<QrDecorateScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("QRコードをデコ"),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => Navigator.pop(context),
+        backgroundColor: AppColors.primary,
+        title: Text(
+          "QR Customize",
+          style: TextStyle(color: AppColors.textLight),
         ),
+        iconTheme: IconThemeData(color: AppColors.textLight),
         actions: [
           TextButton(
             onPressed: () {
@@ -99,7 +98,7 @@ class _QrDecorateScreenState extends State<QrDecorateScreen>
       ),
       body: Column(
         children: [
-          const SizedBox(height: 16),
+          //const SizedBox(height: 16),
           Center(child: _buildQrPreview()),
           const SizedBox(height: 8),
 
@@ -158,6 +157,7 @@ class _QrDecorateScreenState extends State<QrDecorateScreen>
   }
 
   Widget _buildQrPreview() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     BoxDecoration decoration;
 
     if (backgroundStyle == 'transparent') {
@@ -185,7 +185,10 @@ class _QrDecorateScreenState extends State<QrDecorateScreen>
         gradient: LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
-          colors: [Colors.grey.shade300, Colors.grey.shade400],
+          colors:
+              isDark
+                  ? [Color(0xFF444444), Color(0xFF222222)]
+                  : [Colors.grey.shade300, Colors.grey.shade400],
           stops: [0.67, 1.0],
         ),
       ),
@@ -289,7 +292,7 @@ class _QrDecorateScreenState extends State<QrDecorateScreen>
 
   //コード部分のタブ
   Widget _buildCodeTab() {
-    final subTabs = const [Tab(text: "色"), Tab(text: "ピクセル形")];
+    final subTabs = const [Tab(text: "Color"), Tab(text: "Pixel Shape")];
 
     return DefaultTabController(
       length: subTabs.length,
@@ -331,34 +334,90 @@ class _QrDecorateScreenState extends State<QrDecorateScreen>
     return Padding(
       padding: const EdgeInsets.all(16),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          const Text("ピクセルの形（仮）"),
-          const SizedBox(height: 8),
+          const Text(
+            "",
+            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+          ),
+          const SizedBox(height: 16),
+
           Wrap(
-            spacing: 8,
+            spacing: 32,
+            runSpacing: 24,
+            alignment: WrapAlignment.center, // 中央揃え
             children: [
-              ChoiceChip(
-                label: const Text("四角"),
-                selected: selectedPixelShape == 'square',
-                onSelected: (_) {
-                  setState(() {
-                    selectedPixelShape = 'square';
-                  });
-                },
+              _buildPixelShapeChoice(
+                label: "Square",
+                value: 'square',
+                isSelected: selectedPixelShape == 'square',
               ),
-              ChoiceChip(
-                label: const Text("丸"),
-                selected: selectedPixelShape == 'circle',
-                onSelected: (_) {
-                  setState(() {
-                    selectedPixelShape = 'circle';
-                  });
-                },
+              _buildPixelShapeChoice(
+                label: "Circle",
+                value: 'circle',
+                isSelected: selectedPixelShape == 'circle',
               ),
             ],
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildPixelShapeChoice({
+    required String label,
+    required String value,
+    required bool isSelected,
+  }) {
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          selectedPixelShape = value;
+        });
+      },
+      child: Container(
+        width: 100,
+        padding: const EdgeInsets.all(8),
+        decoration: BoxDecoration(
+          color: isSelected ? AppColors.primary : Colors.transparent,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: AppColors.primary, width: 1.5),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            SizedBox(
+              width: 64,
+              height: 64,
+              child: QrImageView(
+                data: "sample",
+                size: 64,
+                backgroundColor: Colors.white,
+                eyeStyle: QrEyeStyle(
+                  eyeShape:
+                      value == 'circle' ? QrEyeShape.circle : QrEyeShape.square,
+                  color: Colors.black,
+                ),
+                dataModuleStyle: QrDataModuleStyle(
+                  dataModuleShape:
+                      value == 'circle'
+                          ? QrDataModuleShape.circle
+                          : QrDataModuleShape.square,
+                  color: Colors.black,
+                ),
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 14,
+                color: isSelected ? Colors.white : AppColors.primary,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -447,9 +506,9 @@ class _QrDecorateScreenState extends State<QrDecorateScreen>
   //中央部分のタブ
   Widget _buildIconTab() {
     final subTabs = const [
-      Tab(text: "アイコン"),
-      Tab(text: "色"),
-      Tab(text: "画像（未実装）"),
+      Tab(text: "Icon"),
+      Tab(text: "Color"),
+      Tab(text: "Image"),
     ];
 
     return DefaultTabController(
@@ -495,7 +554,9 @@ class _QrDecorateScreenState extends State<QrDecorateScreen>
                   //color: selectedIconBackgroundColor,
                   color:
                       isSelected
-                          ? Colors.blueAccent.withValues(alpha: 51) // 0.2 * 255 = 51
+                          ? Colors.blueAccent.withValues(
+                            alpha: 51,
+                          ) // 0.2 * 255 = 51
                           : Colors.transparent,
                   border: Border.all(
                     color:
@@ -544,7 +605,10 @@ class _QrDecorateScreenState extends State<QrDecorateScreen>
   }
 
   Widget _buildIconColorSelection() {
-    final subTabs = const [Tab(text: "アイコン色"), Tab(text: "背景色")];
+    final subTabs = const [
+      Tab(text: "Icon Color"),
+      Tab(text: "Background Color"),
+    ];
 
     return DefaultTabController(
       length: subTabs.length,
@@ -609,7 +673,10 @@ class _QrDecorateScreenState extends State<QrDecorateScreen>
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          ElevatedButton(onPressed: _pickImage, child: const Text('画像を選択')),
+          ElevatedButton(
+            onPressed: _pickImage,
+            child: const Text('Select Image'),
+          ),
           const SizedBox(height: 16),
           if (_selectedImage != null)
             SizedBox(
@@ -621,7 +688,7 @@ class _QrDecorateScreenState extends State<QrDecorateScreen>
               ),
             )
           else
-            const Text('画像が選択されていません。'),
+            const Text('No image selected.'),
         ],
       ),
     );
@@ -629,7 +696,7 @@ class _QrDecorateScreenState extends State<QrDecorateScreen>
 
   //上下文字のタブ
   Widget _buildLabelTab() {
-    final subTabs = const [Tab(text: "上部ラベル"), Tab(text: "下部ラベル")];
+    final subTabs = const [Tab(text: "Top Label"), Tab(text: "Bottom Label")];
 
     return DefaultTabController(
       length: subTabs.length,
@@ -669,201 +736,349 @@ class _QrDecorateScreenState extends State<QrDecorateScreen>
     'Shippori Mincho': GoogleFonts.shipporiMincho,
   };
 
+  bool showColorSettingTop = false; // 画面状態に追加（Stateに記述）
+  bool showColorSettingBottom = false;
+
   Widget _buildTopLabelInput() {
+    //_topTextController.text = topText ?? "";
+    //_tempTopText = topText ?? "";
+
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // ① テキスト入力
-          const Text("上部に表示するテキスト（最大20文字）"),
-          TextField(
-            controller: _topTextController,
-            maxLength: 20,
-            onChanged: (value) {
-              _tempTopText = value;
-            },
-          ),
-          const SizedBox(height: 8),
+          // 切り替えボタン
           Row(
             children: [
-              ElevatedButton(
-                onPressed: () {
-                  setState(() {
-                    topText = _tempTopText;
-                  });
-                },
-                child: const Text('入力'),
+              Expanded(
+                child: OutlinedButton(
+                  onPressed: () => setState(() => showColorSettingTop = false),
+                  style: OutlinedButton.styleFrom(
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    backgroundColor:
+                        !showColorSettingTop ? AppColors.primary : null,
+                    foregroundColor:
+                        !showColorSettingTop ? Colors.white : AppColors.primary,
+                    side: BorderSide(color: AppColors.primary),
+                  ),
+                  child: const Text("Label Text"),
+                ),
               ),
-              const SizedBox(width: 16),
-              ElevatedButton(
-                onPressed: () {
-                  setState(() {
-                    topText = null;
-                    _tempTopText = "";
-                    _topTextController.clear();
-                  });
-                },
-                child: const Text('削除'),
+              const SizedBox(width: 8),
+              Expanded(
+                child: OutlinedButton(
+                  onPressed: () => setState(() => showColorSettingTop = true),
+                  style: OutlinedButton.styleFrom(
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    backgroundColor:
+                        showColorSettingTop ? AppColors.primary : null,
+                    foregroundColor:
+                        showColorSettingTop ? Colors.white : AppColors.primary,
+                    side: BorderSide(color: AppColors.primary),
+                  ),
+                  child: const Text("Font Color"),
+                ),
               ),
             ],
           ),
 
-          const SizedBox(height: 24),
+          const SizedBox(height: 16),
 
-          // ② フォント選択
-          const Text("フォント"),
-          DropdownButton<String>(
-            value: selectedTopFont,
-            isExpanded: true,
-            items:
-                availableFonts.map((font) {
-                  return DropdownMenuItem(
-                    value: font,
-                    child: Text(font, style: fontMap[font]!(fontSize: 16)),
-                  );
-                }).toList(),
-            onChanged: (value) {
-              if (value != null) {
-                setState(() {
-                  selectedTopFont = value;
-                  topLabelStyle = fontMap[selectedTopFont]!(
-                    fontSize: topLabelStyle.fontSize,
-                    color: topLabelStyle.color,
-                  );
-                });
-              }
-            },
-          ),
+          // 表示切り替え：テキスト設定 or 色設定
+          if (!showColorSettingTop)
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text("Text displayed at the top (max 20 characters)"),
+                TextField(
+                  controller: _topTextController,
+                  maxLength: 20,
+                  onChanged: (value) {
+                    _tempTopText = value;
+                  },
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end, // 🔸 右寄せ
+                  children: [
+                    OutlinedButton(
+                      onPressed: () {
+                        setState(() {
+                          topText = _tempTopText;
+                        });
+                      },
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: AppColors.primary,
+                        side: BorderSide(color: AppColors.primary),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: const Text('Apply'),
+                    ),
+                    const SizedBox(width: 12),
+                    OutlinedButton(
+                      onPressed: () {
+                        setState(() {
+                          topText = null;
+                          _tempTopText = "";
+                          _topTextController.clear();
+                        });
+                      },
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: Colors.red,
+                        side: const BorderSide(color: Colors.red),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: const Text('Delete'),
+                    ),
+                  ],
+                ),
 
-          const SizedBox(height: 24),
-
-          // ③ 文字サイズ
-          const Text("文字サイズ"),
-          Slider(
-            value: topLabelStyle.fontSize ?? 16,
-            min: 8,
-            max: 32,
-            divisions: 24,
-            label: "${(topLabelStyle.fontSize ?? 16).round()}",
-            onChanged: (value) {
-              setState(() {
-                topLabelStyle = topLabelStyle.copyWith(fontSize: value);
-              });
-            },
-          ),
-
-          const SizedBox(height: 24),
-
-          // ④ 色
-          const Text("文字色"),
-          ColorSelector(
-            title: "",
-            selectedColor: topLabelStyle.color ?? Colors.black,
-            onColorSelected: (color) {
-              setState(() {
-                topLabelStyle = topLabelStyle.copyWith(color: color);
-              });
-            },
-          ),
+                const SizedBox(height: 24),
+                const Text("Font"),
+                DropdownButton<String>(
+                  value: selectedTopFont,
+                  isExpanded: true,
+                  items:
+                      availableFonts.map((font) {
+                        return DropdownMenuItem(
+                          value: font,
+                          child: Text(
+                            font,
+                            style: fontMap[font]!(fontSize: 16),
+                          ),
+                        );
+                      }).toList(),
+                  onChanged: (value) {
+                    if (value != null) {
+                      setState(() {
+                        selectedTopFont = value;
+                        topLabelStyle = fontMap[selectedTopFont]!(
+                          fontSize: topLabelStyle.fontSize,
+                          color: topLabelStyle.color,
+                        );
+                      });
+                    }
+                  },
+                ),
+                const SizedBox(height: 24),
+                const Text("Font Size"),
+                Slider(
+                  value: topLabelStyle.fontSize ?? 16,
+                  min: 8,
+                  max: 32,
+                  divisions: 24,
+                  label: "${(topLabelStyle.fontSize ?? 16).round()}",
+                  onChanged: (value) {
+                    setState(() {
+                      topLabelStyle = topLabelStyle.copyWith(fontSize: value);
+                    });
+                  },
+                ),
+              ],
+            )
+          else
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(""),
+                ColorSelector(
+                  title: "",
+                  selectedColor: topLabelStyle.color ?? Colors.black,
+                  onColorSelected: (color) {
+                    setState(() {
+                      topLabelStyle = topLabelStyle.copyWith(color: color);
+                    });
+                  },
+                ),
+              ],
+            ),
         ],
       ),
     );
   }
 
   Widget _buildBottomLabelInput() {
-    return Padding(
+    //_bottomTextController.text = bottomText ?? "";
+    //_tempBottomText = bottomText ?? "";
+
+    return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
-      child: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text("下部に表示するテキスト（最大20文字）"),
-            TextField(
-              controller: _bottomTextController,
-              maxLength: 20,
-              onChanged: (value) {
-                _tempBottomText = value;
-              },
-            ),
-            const SizedBox(height: 8),
-            Row(
-              children: [
-                ElevatedButton(
-                  onPressed: () {
-                    setState(() {
-                      bottomText = _tempBottomText;
-                    });
-                  },
-                  child: const Text('入力'),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // 切り替えボタン（テキスト⇔色設定）
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton(
+                  onPressed:
+                      () => setState(() => showColorSettingBottom = false),
+                  style: OutlinedButton.styleFrom(
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    backgroundColor:
+                        !showColorSettingBottom ? AppColors.primary : null,
+                    foregroundColor:
+                        !showColorSettingBottom
+                            ? Colors.white
+                            : AppColors.primary,
+                    side: BorderSide(color: AppColors.primary),
+                  ),
+                  child: const Text("Label Text"),
                 ),
-                const SizedBox(width: 16),
-                ElevatedButton(
-                  onPressed: () {
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: OutlinedButton(
+                  onPressed:
+                      () => setState(() => showColorSettingBottom = true),
+                  style: OutlinedButton.styleFrom(
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    backgroundColor:
+                        showColorSettingBottom ? AppColors.primary : null,
+                    foregroundColor:
+                        showColorSettingBottom
+                            ? Colors.white
+                            : AppColors.primary,
+                    side: BorderSide(color: AppColors.primary),
+                  ),
+                  child: const Text("Font Color"),
+                ),
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 16),
+
+          if (!showColorSettingBottom)
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text("Text displayed at the bottom (max 20 characters)"),
+                TextField(
+                  controller: _bottomTextController,
+                  maxLength: 20,
+                  onChanged: (value) {
+                    _tempBottomText = value;
+                  },
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    OutlinedButton(
+                      onPressed: () {
+                        setState(() {
+                          bottomText = _tempBottomText;
+                        });
+                      },
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: AppColors.primary,
+                        side: BorderSide(color: AppColors.primary),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: const Text('Apply'),
+                    ),
+                    const SizedBox(width: 12),
+                    OutlinedButton(
+                      onPressed: () {
+                        setState(() {
+                          bottomText = null;
+                          _tempBottomText = "";
+                          _bottomTextController.clear();
+                        });
+                      },
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: Colors.red,
+                        side: const BorderSide(color: Colors.red),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: const Text('Delete'),
+                    ),
+                  ],
+                ),
+
+                const SizedBox(height: 24),
+                const Text("Font"),
+                DropdownButton<String>(
+                  value: selectedBottomFont,
+                  isExpanded: true,
+                  items:
+                      availableFonts.map((font) {
+                        return DropdownMenuItem(
+                          value: font,
+                          child: Text(
+                            font,
+                            style: fontMap[font]!(fontSize: 16),
+                          ),
+                        );
+                      }).toList(),
+                  onChanged: (value) {
+                    if (value != null) {
+                      setState(() {
+                        selectedBottomFont = value;
+                        bottomLabelStyle = fontMap[selectedBottomFont]!(
+                          fontSize: bottomLabelStyle.fontSize,
+                          color: bottomLabelStyle.color,
+                        );
+                      });
+                    }
+                  },
+                ),
+
+                const SizedBox(height: 24),
+                const Text("Font Size"),
+                Slider(
+                  value: bottomLabelStyle.fontSize ?? 16,
+                  min: 8,
+                  max: 32,
+                  divisions: 24,
+                  label: "${(bottomLabelStyle.fontSize ?? 16).round()}",
+                  onChanged: (value) {
                     setState(() {
-                      bottomText = null;
-                      _tempBottomText = "";
-                      _bottomTextController.clear();
+                      bottomLabelStyle = bottomLabelStyle.copyWith(
+                        fontSize: value,
+                      );
                     });
                   },
-                  child: const Text('削除'),
+                ),
+              ],
+            )
+          else
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(""),
+                ColorSelector(
+                  title: "",
+                  selectedColor: bottomLabelStyle.color ?? Colors.black,
+                  onColorSelected: (color) {
+                    setState(() {
+                      bottomLabelStyle = bottomLabelStyle.copyWith(
+                        color: color,
+                      );
+                    });
+                  },
                 ),
               ],
             ),
-
-            const SizedBox(height: 24),
-            const Text("フォント"),
-            DropdownButton<String>(
-              value: selectedBottomFont,
-              isExpanded: true,
-              items:
-                  availableFonts.map((font) {
-                    return DropdownMenuItem(
-                      value: font,
-                      child: Text(font, style: fontMap[font]!(fontSize: 16)),
-                    );
-                  }).toList(),
-              onChanged: (value) {
-                if (value != null) {
-                  setState(() {
-                    selectedBottomFont = value;
-                    bottomLabelStyle = fontMap[selectedBottomFont]!(
-                      fontSize: bottomLabelStyle.fontSize,
-                      color: bottomLabelStyle.color,
-                    );
-                  });
-                }
-              },
-            ),
-
-            const SizedBox(height: 24),
-            const Text("文字サイズ"),
-            Slider(
-              value: bottomLabelStyle.fontSize ?? 16,
-              min: 8,
-              max: 32,
-              divisions: 24,
-              label: "${(bottomLabelStyle.fontSize ?? 16).round()}",
-              onChanged: (value) {
-                setState(() {
-                  bottomLabelStyle = bottomLabelStyle.copyWith(fontSize: value);
-                });
-              },
-            ),
-
-            const SizedBox(height: 24),
-            const Text("文字色"),
-            ColorSelector(
-              title: "",
-              selectedColor: bottomLabelStyle.color ?? Colors.black,
-              onColorSelected: (color) {
-                setState(() {
-                  bottomLabelStyle = bottomLabelStyle.copyWith(color: color);
-                });
-              },
-            ),
-          ],
-        ),
+        ],
       ),
     );
   }
