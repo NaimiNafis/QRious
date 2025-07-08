@@ -31,43 +31,47 @@ class _QrInputScreenState extends State<QrInputScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: AppBar(
-        backgroundColor: AppColors.primary,
-        title: Text(
-          'Enter ${widget.qrType} Info',
-          style: TextStyle(color: AppColors.textLight),
+    return GestureDetector(
+      onTap: () => FocusScope.of(context).unfocus(),
+      child: Scaffold(
+        backgroundColor: AppColors.background,
+        appBar: AppBar(
+          backgroundColor: AppColors.primary,
+          title: Text(
+            'Enter ${widget.qrType} Info',
+            style: TextStyle(color: AppColors.textLight),
+          ),
+          iconTheme: IconThemeData(color: AppColors.textLight),
         ),
-        iconTheme: IconThemeData(color: AppColors.textLight),
-      ),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [..._buildInputsForType(widget.qrType)],
+        body: SafeArea(
+          child: SingleChildScrollView(
+            physics: const ClampingScrollPhysics(),
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [..._buildInputsForType(widget.qrType)],
+            ),
           ),
         ),
-      ),
-      bottomNavigationBar: Padding(
-        padding: const EdgeInsets.fromLTRB(16, 12, 16, 50),
-        child: SizedBox(
-          height: 56,
-          child: ElevatedButton.icon(
-            icon: Icon(Icons.qr_code, color: AppColors.textLight),
-            label: Text(
-              "Generate QR Code",
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-            ),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primary,
-              foregroundColor: AppColors.textLight,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
+        bottomNavigationBar: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 12, 16, 50),
+          child: SizedBox(
+            height: 56,
+            child: ElevatedButton.icon(
+              icon: Icon(Icons.qr_code, color: AppColors.textLight),
+              label: Text(
+                "Generate QR Code",
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primary,
+                foregroundColor: AppColors.textLight,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              onPressed: _onCreatePressed,
             ),
-            onPressed: _onCreatePressed,
           ),
         ),
       ),
@@ -98,6 +102,8 @@ class _QrInputScreenState extends State<QrInputScreen> {
         controller: controller,
         keyboardType: keyboardType,
         inputFormatters: inputFormatters,
+        textInputAction: TextInputAction.done,
+        onSubmitted: (_) => FocusScope.of(context).unfocus(),
         decoration: InputDecoration(
           labelText: label,
           border: InputBorder.none,
@@ -120,7 +126,7 @@ class _QrInputScreenState extends State<QrInputScreen> {
           _styledTextField(
             'Enter phone number',
             input1,
-            keyboardType: TextInputType.number,
+            keyboardType: TextInputType.phone,
             inputFormatters: [FilteringTextInputFormatter.digitsOnly],
           ),
         ];
