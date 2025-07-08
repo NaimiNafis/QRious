@@ -4,7 +4,7 @@ import '../../models/qr_create_data.dart';
 import '../../models/qr_decoration_settings.dart';
 import 'color_selector.dart';
 import 'qr_decorate_result_screen.dart';
-import 'package:flutter/cupertino.dart';
+//import 'package:flutter/cupertino.dart';
 import 'dart:io';
 import 'package:image_picker/image_picker.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -99,58 +99,6 @@ class _QrDecorateScreenState extends State<QrDecorateScreen>
           ),
         ],
       ),
-      /*body: Column(
-        children: [
-          /*
-          Center(child: _buildQrPreview()),
-          const SizedBox(height: 8),*/
-        Flexible(
-          flex: 0,
-          child: ConstrainedBox(
-            constraints: BoxConstraints(
-              maxHeight: maxPreviewHeight,
-            ),
-            child: SingleChildScrollView(
-              child: Center(child: _buildQrPreview()),
-            ),
-          ),
-        ),
-          const SizedBox(height: 8),
-
-          // 上段のカテゴリタブ（コード・背景・中央・文字）
-          /*TabBar(
-            controller: _tabController,
-            tabs: _tabs,
-            labelColor: Theme.of(context).primaryColor,
-            unselectedLabelColor: Colors.grey,
-            indicatorColor: Theme.of(context).primaryColor,
-          ),*/
-
-                  Container(
-          color: Colors.white, // タブが背景に埋もれないように（必要に応じて）
-          child: TabBar(
-            controller: _tabController,
-            tabs: _tabs,
-            labelColor: Theme.of(context).primaryColor,
-            unselectedLabelColor: Colors.grey,
-            indicatorColor: Theme.of(context).primaryColor,
-          ),
-        ),
-
-          // タブビュー
-          Expanded(
-            child: TabBarView(
-              controller: _tabController,
-              children: [
-                _buildCodeTab(),
-                _buildBackgroundTab(),
-                _buildIconTab(),
-                _buildLabelTab(),
-              ],
-            ),
-          ),
-        ],
-      ),*/
       body: LayoutBuilder(
         builder: (context, constraints) {
           final totalHeight = constraints.maxHeight;
@@ -203,7 +151,7 @@ class _QrDecorateScreenState extends State<QrDecorateScreen>
       centerIcon: _selectedIcon,
       iconColor: selectedIconColor,
       iconBackgroundColor: selectedIconBackgroundColor,
-      embeddedImage: _selectedImage,
+      embeddedImage: _isImageVisible ? _selectedImage : null,
       topText: topText,
       bottomText: bottomText,
       topLabelStyle: topLabelStyle,
@@ -268,7 +216,7 @@ class _QrDecorateScreenState extends State<QrDecorateScreen>
                 padding: const EdgeInsets.only(bottom: 8),
                 child: Center(
                   child: SizedBox(
-                    width: 400, // 横幅を固定（←ここがポイント）
+                    width: 400,
                     child: Text(
                       topText!,
                       style: topLabelStyle,
@@ -312,7 +260,7 @@ class _QrDecorateScreenState extends State<QrDecorateScreen>
                     ),
 
                     // 中央のアイコン（直接表示）
-                    if (_selectedImage != null)
+                    if (_selectedImage != null && _isImageVisible != false)
                       SizedBox(
                         width: 48,
                         height: 48,
@@ -608,126 +556,374 @@ class _QrDecorateScreenState extends State<QrDecorateScreen>
     );
   }
 
+  int iconPageIndex = 0;
+
   Widget _buildIconSelection() {
-    return Wrap(
-      spacing: 8,
-      runSpacing: 8,
-      alignment: WrapAlignment.center,
-      children:
-          availableIcons.map((iconData) {
-            final isSelected = _selectedIcon == iconData;
-            return GestureDetector(
-              onTap: () {
-                _onIconSelected(isSelected ? null : iconData);
-              },
-              child: Container(
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  //color: selectedIconBackgroundColor,
-                  color:
-                      isSelected
-                          ? Colors.blueAccent.withValues(
-                            alpha: 51,
-                          ) // 0.2 * 255 = 51
-                          : Colors.transparent,
-                  border: Border.all(
-                    color:
-                        isSelected ? Colors.blueAccent : Colors.grey.shade300,
-                    width: 2,
+    final iconsPerPage = 24;
+    final totalPages = (availableIcons.length / iconsPerPage).ceil();
+    final pageController = PageController(initialPage: iconPageIndex);
+
+    List<Widget> buildPages() {
+      return List.generate(totalPages, (pageIndex) {
+        final start = pageIndex * iconsPerPage;
+        final end = (start + iconsPerPage).clamp(0, availableIcons.length);
+        final icons = availableIcons.sublist(start, end);
+
+        return Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          alignment: WrapAlignment.center,
+          children:
+              icons.map((iconData) {
+                final isSelected = _selectedIcon == iconData;
+                return GestureDetector(
+                  onTap:
+                      () => setState(() {
+                        _selectedIcon = isSelected ? null : iconData;
+                        _isImageVisible = false;
+                      }),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color:
+                          isSelected
+                              ? Colors.blueAccent.withAlpha(51)
+                              : Colors.transparent,
+                      border: Border.all(
+                        color:
+                            isSelected
+                                ? Colors.blueAccent
+                                : Colors.grey.shade300,
+                        width: 2,
+                      ),
+                    ),
+                    padding: const EdgeInsets.all(8), // 丸のサイズ調整ポイント
+                    child: Icon(
+                      iconData,
+                      size: 36,
+                      color:
+                          Theme.of(context).brightness == Brightness.dark
+                              ? Colors.white
+                              : Colors.black,
+                    ),
                   ),
-                ),
-                padding: const EdgeInsets.all(12),
-                child: Icon(
-                  iconData,
-                  size: 36,
-                  color: Colors.black /*selectedIconColor*/,
-                ),
+                );
+              }).toList(),
+        );
+      });
+    }
+
+    return Column(
+      children: [
+        // ページ切替ボタンとページ表示
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            IconButton(
+              onPressed:
+                  iconPageIndex > 0
+                      ? () {
+                        setState(() {
+                          iconPageIndex--;
+                          pageController.animateToPage(
+                            iconPageIndex,
+                            duration: const Duration(milliseconds: 300),
+                            curve: Curves.easeInOut,
+                          );
+                        });
+                      }
+                      : null,
+              icon: const Icon(Icons.chevron_left),
+            ),
+            Text("Page ${iconPageIndex + 1} / $totalPages"),
+            IconButton(
+              onPressed:
+                  iconPageIndex < totalPages - 1
+                      ? () {
+                        setState(() {
+                          iconPageIndex++;
+                          pageController.animateToPage(
+                            iconPageIndex,
+                            duration: const Duration(milliseconds: 300),
+                            curve: Curves.easeInOut,
+                          );
+                        });
+                      }
+                      : null,
+              icon: const Icon(Icons.chevron_right),
+            ),
+          ],
+        ),
+
+        const SizedBox(height: 12),
+
+        // アイコン一覧部分
+        Flexible(
+          child: PageView(
+            controller: pageController,
+            onPageChanged: (index) {
+              setState(() {
+                iconPageIndex = index;
+              });
+            },
+            children: buildPages(),
+          ),
+        ),
+
+        //const SizedBox(height: 12),
+
+        // Deleteボタンをアイコン群の真下に配置
+        Center(
+          child: OutlinedButton(
+            onPressed: () {
+              setState(() {
+                _selectedIcon = null;
+              });
+            },
+            style: OutlinedButton.styleFrom(
+              foregroundColor: Colors.white,
+              backgroundColor: Colors.red,
+              side: const BorderSide(color: Colors.red),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
               ),
-            );
-          }).toList(),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            ),
+            child: const Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.clear, size: 18),
+                SizedBox(width: 4),
+                Text("Delete", style: TextStyle(fontWeight: FontWeight.bold)),
+              ],
+            ),
+          ),
+        ),
+
+        const SizedBox(height: 6),
+      ],
     );
   }
 
   final List<IconData> availableIcons = [
-    CupertinoIcons.heart,
-    CupertinoIcons.star,
-    CupertinoIcons.camera,
-    CupertinoIcons.person,
-    CupertinoIcons.phone,
-    CupertinoIcons.mail,
-    CupertinoIcons.home,
-    CupertinoIcons.cart,
-    CupertinoIcons.location,
-    CupertinoIcons.settings,
-    CupertinoIcons.wifi,
-    CupertinoIcons.wifi_exclamationmark,
-    CupertinoIcons.link,
-    CupertinoIcons.globe,
-    CupertinoIcons.cloud,
-    CupertinoIcons.share,
+    // URL・リンク系（URL, Link, Public, Open_in_new, Shareなど）
+    Icons.link,
+    Icons.public,
+    Icons.open_in_new,
+    Icons.share,
+    Icons.language,
 
-    // … 必要に応じて追加
+    // テキスト系（Text, Message, Chat, Forum, Email, Book, Bookmark）
+    Icons.text_fields,
+    Icons.message,
+    Icons.chat,
+    Icons.forum,
+    Icons.email,
+    Icons.book,
+    Icons.bookmark,
+
+    // 電話系（Phone, Call）
+    Icons.phone,
+    Icons.call,
+
+    // WiFi・通信系（WiFi, Bluetooth, Network系）
+    Icons.wifi,
+    Icons.bluetooth,
+    Icons.dns,
+    Icons.network_check, // 追加候補
+    // 基本アクション・UI系
+    Icons.favorite,
+    Icons.favorite_border,
+    Icons.star,
+    Icons.thumb_up,
+    Icons.check,
+    Icons.close,
+    Icons.done,
+    Icons.edit,
+    Icons.search,
+    Icons.filter_vintage,
+    Icons.zoom_in,
+    Icons.zoom_out,
+    Icons.send,
+    Icons.security,
+    Icons.lock,
+    Icons.notifications,
+    Icons.help,
+    Icons.info,
+    Icons.menu,
+
+    // 人・プロフィール系
+    Icons.person,
+    Icons.account_circle,
+    Icons.group,
+    Icons.face,
+    Icons.face_retouching_natural,
+    Icons.fingerprint,
+    Icons.android,
+    Icons.apple,
+
+    // 生活・場所・交通系
+    Icons.home,
+    Icons.location_on,
+    Icons.map,
+    Icons.restaurant,
+    Icons.local_cafe,
+    Icons.local_bar,
+    Icons.local_hospital,
+    Icons.local_library,
+    Icons.local_mall,
+    Icons.local_offer,
+    Icons.local_parking,
+    Icons.local_pharmacy,
+    Icons.local_play,
+    Icons.local_post_office,
+    Icons.local_shipping,
+    Icons.directions_car,
+    Icons.directions_bike,
+    Icons.directions_walk,
+    Icons.flight,
+    Icons.hotel,
+    Icons.calendar_today,
+    Icons.drive_eta,
+
+    // 仕事・勉強・趣味系
+    Icons.school,
+    Icons.work,
+    Icons.code,
+    Icons.build,
+    Icons.gamepad,
+    Icons.fitness_center,
+    Icons.sports_esports,
+    Icons.headphones,
+    Icons.handyman,
+
+    // 趣味・芸術・自然系
+    Icons.palette,
+    Icons.emoji_emotions,
+    Icons.emoji_food_beverage,
+    Icons.emoji_nature,
+    Icons.emoji_people,
+    Icons.emoji_symbols,
+    Icons.emoji_transportation,
+    Icons.eco,
+    Icons.bug_report,
+    Icons.hiking,
+    Icons.highlight,
+    Icons.history,
+
+    // お金・買い物系
+    Icons.attach_money,
+    Icons.credit_card,
+    Icons.shopping_cart,
+    Icons.print,
+    Icons.battery_full,
+    Icons.brightness_5,
+
+    // その他
+    Icons.face,
+    Icons.desktop_windows,
   ];
 
-  Future<void> _onIconSelected(IconData? iconData) async {
-    setState(() {
-      _selectedIcon = iconData;
-      _selectedImage = null;
-    });
-  }
+  bool isIconColorSelected = true;
 
   Widget _buildIconColorSelection() {
-    final subTabs = const [
-      Tab(text: "Icon Color"),
-      Tab(text: "Background Color"),
-    ];
-
-    return DefaultTabController(
-      length: subTabs.length,
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          TabBar(
-            tabs: subTabs,
-            labelColor: Theme.of(context).primaryColor,
-            unselectedLabelColor: Colors.grey,
-            indicatorColor: Theme.of(context).primaryColor,
-          ),
-          Expanded(
-            child: TabBarView(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: ColorSelector(
-                    title: "",
-                    selectedColor: selectedIconColor,
-                    onColorSelected: (color) {
-                      setState(() {
-                        selectedIconColor = color;
-                        //_updateEmbeddedIcon();
-                      });
-                    },
+          // 切り替えボタン
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton(
+                  onPressed: () => setState(() => isIconColorSelected = true),
+                  style: OutlinedButton.styleFrom(
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    backgroundColor:
+                        isIconColorSelected ? AppColors.primary : null,
+                    foregroundColor:
+                        isIconColorSelected ? Colors.white : AppColors.primary,
+                    side: BorderSide(color: AppColors.primary),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: const [
+                      Icon(Icons.color_lens, size: 18),
+                      SizedBox(width: 4),
+                      Text("Icon Color"),
+                    ],
                   ),
                 ),
-                Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: ColorSelector(
-                    title: "",
-                    selectedColor: selectedIconBackgroundColor,
-                    onColorSelected: (color) {
-                      setState(() {
-                        selectedIconBackgroundColor = color;
-                        //_updateEmbeddedIcon();
-                      });
-                    },
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: OutlinedButton(
+                  onPressed: () => setState(() => isIconColorSelected = false),
+                  style: OutlinedButton.styleFrom(
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    backgroundColor:
+                        !isIconColorSelected ? AppColors.primary : null,
+                    foregroundColor:
+                        !isIconColorSelected ? Colors.white : AppColors.primary,
+                    side: BorderSide(color: AppColors.primary),
                   ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: const [
+                      Icon(Icons.format_color_fill, size: 18),
+                      SizedBox(width: 4),
+                      Text("Background Color"),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 16),
+
+          // カラーセレクター
+          if (isIconColorSelected)
+            Column(
+              children: [
+                ColorSelector(
+                  key: const ValueKey('icon_color'),
+                  title: "",
+                  selectedColor: selectedIconColor,
+                  onColorSelected: (color) {
+                    setState(() {
+                      selectedIconColor = color;
+                    });
+                  },
+                ),
+              ],
+            )
+          else
+            Column(
+              children: [
+                ColorSelector(
+                  key: const ValueKey('background_color'),
+                  title: "",
+                  selectedColor: selectedIconBackgroundColor,
+                  onColorSelected: (color) {
+                    setState(() {
+                      selectedIconBackgroundColor = color;
+                    });
+                  },
                 ),
               ],
             ),
-          ),
         ],
       ),
     );
   }
+
+  bool _isImageVisible = true; // QRコード上の表示・非表示フラグ
 
   Future<void> _pickImage() async {
     final picker = ImagePicker();
@@ -735,34 +931,98 @@ class _QrDecorateScreenState extends State<QrDecorateScreen>
     if (picked != null) {
       setState(() {
         _selectedImage = File(picked.path);
+        _isImageVisible = true; // 新規選択時は表示オンに
         _selectedIcon = null;
       });
     }
   }
 
   Widget _buildImageSelection() {
-    return Center(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          ElevatedButton(
-            onPressed: _pickImage,
-            child: const Text('Select Image'),
-          ),
-          const SizedBox(height: 16),
-          if (_selectedImage != null)
-            SizedBox(
-              width: 150,
-              height: 150,
-              child: FittedBox(
-                fit: BoxFit.contain, // ここで縦横比を保ったまま縮小
-                child: Image.file(_selectedImage!),
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        const SizedBox(height: 16),
+        // タブ内のプレビューは常に表示（チェック状態に関係なく）
+        if (_selectedImage != null)
+          SizedBox(
+            width: 150,
+            height: 150,
+            child: FittedBox(
+              fit: BoxFit.contain,
+              child: Image.file(_selectedImage!),
+            ),
+          )
+        else
+          const Text('No image selected.'),
+
+        const SizedBox(height: 16),
+
+        // チェックボックスはQRコード上の画像表示切り替え用
+        if (_selectedImage != null)
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Checkbox(
+                value: _isImageVisible,
+                onChanged: (checked) {
+                  setState(() {
+                    _isImageVisible = checked ?? false;
+                    if (_isImageVisible) {
+                      _selectedIcon = null; // 表示ON時にアイコン選択解除
+                    }
+                  });
+                },
               ),
-            )
-          else
-            const Text('No image selected.'),
-        ],
-      ),
+              const Text('Use this image on QR Code'),
+            ],
+          ),
+
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            OutlinedButton(
+              onPressed: _pickImage,
+              style: OutlinedButton.styleFrom(
+                foregroundColor: Colors.white,
+                backgroundColor: Theme.of(context).primaryColor,
+                side: BorderSide(color: Theme.of(context).primaryColor),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 8,
+                ),
+              ),
+              child: const Text('Select Image'),
+            ),
+            const SizedBox(width: 12),
+            if (_selectedImage != null)
+              OutlinedButton(
+                onPressed: () {
+                  setState(() {
+                    _selectedImage = null;
+                    _isImageVisible = false;
+                  });
+                },
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: Colors.white,
+                  backgroundColor: Colors.red,
+                  side: const BorderSide(color: Colors.red),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 8,
+                  ),
+                ),
+                child: const Text('Delete'),
+              ),
+          ],
+        ),
+        const SizedBox(height: 16),
+      ],
     );
   }
 
@@ -812,9 +1072,6 @@ class _QrDecorateScreenState extends State<QrDecorateScreen>
   bool showColorSettingBottom = false;
 
   Widget _buildTopLabelInput() {
-    //_topTextController.text = topText ?? "";
-    //_tempTopText = topText ?? "";
-
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: Column(
@@ -836,7 +1093,14 @@ class _QrDecorateScreenState extends State<QrDecorateScreen>
                         !showColorSettingTop ? Colors.white : AppColors.primary,
                     side: BorderSide(color: AppColors.primary),
                   ),
-                  child: const Text("Label Text"),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: const [
+                      Icon(Icons.text_fields, size: 18),
+                      SizedBox(width: 4),
+                      Text("Label Text"),
+                    ],
+                  ),
                 ),
               ),
               const SizedBox(width: 8),
@@ -853,7 +1117,14 @@ class _QrDecorateScreenState extends State<QrDecorateScreen>
                         showColorSettingTop ? Colors.white : AppColors.primary,
                     side: BorderSide(color: AppColors.primary),
                   ),
-                  child: const Text("Font Color"),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: const [
+                      Icon(Icons.color_lens, size: 18),
+                      SizedBox(width: 4),
+                      Text("Font Color"),
+                    ],
+                  ),
                 ),
               ),
             ],
@@ -866,7 +1137,16 @@ class _QrDecorateScreenState extends State<QrDecorateScreen>
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text("Text displayed at the top (max 20 characters)"),
+                Row(
+                  children: const [
+                    Icon(Icons.text_fields, size: 20),
+                    SizedBox(width: 4),
+                    Text(
+                      "Top Label Text (max 20 characters)",
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                  ],
+                ),
                 TextField(
                   controller: _topTextController,
                   maxLength: 20,
@@ -885,7 +1165,8 @@ class _QrDecorateScreenState extends State<QrDecorateScreen>
                         });
                       },
                       style: OutlinedButton.styleFrom(
-                        foregroundColor: AppColors.primary,
+                        foregroundColor: Colors.white,
+                        backgroundColor: AppColors.primary,
                         side: BorderSide(color: AppColors.primary),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
@@ -903,7 +1184,8 @@ class _QrDecorateScreenState extends State<QrDecorateScreen>
                         });
                       },
                       style: OutlinedButton.styleFrom(
-                        foregroundColor: Colors.red,
+                        foregroundColor: Colors.white,
+                        backgroundColor: Colors.red,
                         side: const BorderSide(color: Colors.red),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
@@ -915,7 +1197,13 @@ class _QrDecorateScreenState extends State<QrDecorateScreen>
                 ),
 
                 const SizedBox(height: 24),
-                const Text("Font"),
+                Row(
+                  children: const [
+                    Icon(Icons.font_download, size: 20),
+                    SizedBox(width: 4),
+                    Text("Font", style: TextStyle(fontWeight: FontWeight.bold)),
+                  ],
+                ),
                 DropdownButton<String>(
                   value: selectedTopFont,
                   isExpanded: true,
@@ -942,7 +1230,16 @@ class _QrDecorateScreenState extends State<QrDecorateScreen>
                   },
                 ),
                 const SizedBox(height: 24),
-                const Text("Font Size"),
+                Row(
+                  children: const [
+                    Icon(Icons.format_size, size: 20),
+                    SizedBox(width: 4),
+                    Text(
+                      "Text Size",
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                  ],
+                ),
                 Slider(
                   value: topLabelStyle.fontSize ?? 16,
                   min: 12,
@@ -961,7 +1258,7 @@ class _QrDecorateScreenState extends State<QrDecorateScreen>
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(""),
+                //const Text(""),
                 ColorSelector(
                   title: "",
                   selectedColor: topLabelStyle.color ?? Colors.black,
@@ -979,15 +1276,12 @@ class _QrDecorateScreenState extends State<QrDecorateScreen>
   }
 
   Widget _buildBottomLabelInput() {
-    //_bottomTextController.text = bottomText ?? "";
-    //_tempBottomText = bottomText ?? "";
-
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // 切り替えボタン（テキスト⇔色設定）
+          // 切り替えボタン
           Row(
             children: [
               Expanded(
@@ -1006,7 +1300,14 @@ class _QrDecorateScreenState extends State<QrDecorateScreen>
                             : AppColors.primary,
                     side: BorderSide(color: AppColors.primary),
                   ),
-                  child: const Text("Label Text"),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: const [
+                      Icon(Icons.text_fields, size: 18),
+                      SizedBox(width: 4),
+                      Text("Label Text"),
+                    ],
+                  ),
                 ),
               ),
               const SizedBox(width: 8),
@@ -1026,7 +1327,14 @@ class _QrDecorateScreenState extends State<QrDecorateScreen>
                             : AppColors.primary,
                     side: BorderSide(color: AppColors.primary),
                   ),
-                  child: const Text("Font Color"),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: const [
+                      Icon(Icons.color_lens, size: 18),
+                      SizedBox(width: 4),
+                      Text("Font Color"),
+                    ],
+                  ),
                 ),
               ),
             ],
@@ -1038,7 +1346,16 @@ class _QrDecorateScreenState extends State<QrDecorateScreen>
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text("Text displayed at the bottom (max 20 characters)"),
+                Row(
+                  children: const [
+                    Icon(Icons.text_fields, size: 20),
+                    SizedBox(width: 4),
+                    Text(
+                      "Bottom Label Text (max 20 characters)",
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                  ],
+                ),
                 TextField(
                   controller: _bottomTextController,
                   maxLength: 20,
@@ -1057,7 +1374,8 @@ class _QrDecorateScreenState extends State<QrDecorateScreen>
                         });
                       },
                       style: OutlinedButton.styleFrom(
-                        foregroundColor: AppColors.primary,
+                        foregroundColor: Colors.white,
+                        backgroundColor: AppColors.primary,
                         side: BorderSide(color: AppColors.primary),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
@@ -1075,7 +1393,8 @@ class _QrDecorateScreenState extends State<QrDecorateScreen>
                         });
                       },
                       style: OutlinedButton.styleFrom(
-                        foregroundColor: Colors.red,
+                        foregroundColor: Colors.white,
+                        backgroundColor: Colors.red,
                         side: const BorderSide(color: Colors.red),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
@@ -1087,7 +1406,13 @@ class _QrDecorateScreenState extends State<QrDecorateScreen>
                 ),
 
                 const SizedBox(height: 24),
-                const Text("Font"),
+                Row(
+                  children: const [
+                    Icon(Icons.font_download, size: 20),
+                    SizedBox(width: 4),
+                    Text("Font", style: TextStyle(fontWeight: FontWeight.bold)),
+                  ],
+                ),
                 DropdownButton<String>(
                   value: selectedBottomFont,
                   isExpanded: true,
@@ -1113,9 +1438,17 @@ class _QrDecorateScreenState extends State<QrDecorateScreen>
                     }
                   },
                 ),
-
                 const SizedBox(height: 24),
-                const Text("Font Size"),
+                Row(
+                  children: const [
+                    Icon(Icons.format_size, size: 20),
+                    SizedBox(width: 4),
+                    Text(
+                      "Text Size",
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                  ],
+                ),
                 Slider(
                   value: bottomLabelStyle.fontSize ?? 16,
                   min: 12,
@@ -1136,7 +1469,7 @@ class _QrDecorateScreenState extends State<QrDecorateScreen>
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(""),
+                //const Text(""),
                 ColorSelector(
                   title: "",
                   selectedColor: bottomLabelStyle.color ?? Colors.black,

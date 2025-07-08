@@ -60,15 +60,15 @@ class QrPreviewWidget extends StatelessWidget {
           padding: const EdgeInsets.all(16),
           decoration: decoration,
           child: SizedBox(
-            width: 200,
-            height: 200,
+            width: 180,
+            height: 180,
             child: Stack(
               alignment: Alignment.center,
               children: [
                 QrImageView(
                   data: qrData.content,
                   version: QrVersions.auto,
-                  size: 200,
+                  size: 180,
                   backgroundColor: Colors.transparent,
                   errorCorrectionLevel: QrErrorCorrectLevel.H,
                   eyeStyle: QrEyeStyle(
