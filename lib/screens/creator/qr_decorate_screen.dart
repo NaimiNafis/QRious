@@ -77,91 +77,135 @@ class _QrDecorateScreenState extends State<QrDecorateScreen>
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: AppColors.primary,
-        title: Text(
-          "QR Customize",
-          style: TextStyle(color: AppColors.textLight),
-        ),
-        iconTheme: IconThemeData(color: AppColors.textLight),
-        actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 4.0),
-            child: TextButton.icon(
-              onPressed: _onSave,
-              icon: Icon(Icons.visibility, color: AppColors.textLight),
-              label: Text(
-                "Preview",
-                style: TextStyle(
-                  color: AppColors.textLight,
-                  fontWeight: FontWeight.bold,
+    return WillPopScope(
+      onWillPop: () async {
+        final shouldLeave = await showDialog<bool>(
+          context: context,
+          barrierDismissible: false,
+          builder:
+              (context) => AlertDialog(
+                title: Row(
+                  children: [
+                    Icon(
+                      Icons.warning_amber_rounded,
+                      color: AppColors.danger,
+                      size: 28,
+                    ),
+                    const SizedBox(width: 10),
+                    Text('Warning'),
+                  ],
+                ),
+                content: const Text(
+                  "Your changes won't be saved. Do you want to go back to the previous screen?",
+                ),
+                actions: [
+                  Padding(
+                    padding: const EdgeInsets.only(left: 20.0),
+                    child: TextButton(
+                      onPressed: () => Navigator.of(context).pop(false),
+                      child: Text(
+                        'Cancel',
+                        style: TextStyle(color: AppColors.textDark),
+                      ),
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.only(right: 1.0),
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.danger,
+                      ),
+                      onPressed: () => Navigator.of(context).pop(true),
+                      child: Text(
+                        'Leave',
+                        style: const TextStyle(color: Colors.white),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+        );
+        return shouldLeave ?? false;
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          backgroundColor: AppColors.primary,
+          title: Text(
+            "QR Customize",
+            style: TextStyle(color: AppColors.textLight),
+          ),
+          iconTheme: IconThemeData(color: AppColors.textLight),
+          actions: [
+            Padding(
+              padding: const EdgeInsets.only(right: 4.0),
+              child: TextButton.icon(
+                onPressed: _onSave,
+                icon: Icon(Icons.visibility, color: AppColors.textLight),
+                label: Text(
+                  "Preview",
+                  style: TextStyle(
+                    color: AppColors.textLight,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
             ),
-          ),
-        ],
-      ),
-      body: LayoutBuilder(
-        builder: (context, constraints) {
-          final totalHeight = constraints.maxHeight;
-          final tabBarHeight = 48.0; // タブバー高さの目安
-          final previewHeight = totalHeight * 0.35;
+          ],
+        ),
+        body: LayoutBuilder(
+          builder: (context, constraints) {
+            final totalHeight = constraints.maxHeight;
+            final tabBarHeight = 48.0;
+            final previewHeight = totalHeight * 0.35;
 
-          return Column(
-            children: [
-              // プレビュー：高さ最大 previewHeight でスクロール可能に
-              SizedBox(
-                height: previewHeight,
-                child: SingleChildScrollView(
-                  physics: BouncingScrollPhysics(),
-                  child: Center(child: _buildQrPreview()),
-                ),
-              ),
-
-              // タブバー（スクリーン幅いっぱいに）
-              SizedBox(
-                height: tabBarHeight,
-                child: TabBar(
-                  controller: _tabController,
-                  tabs: _tabs,
-                  labelColor: Colors.white,
-                  unselectedLabelColor:
-                      Theme.of(context).brightness == Brightness.dark
-                          ? Colors.white54
-                          : Colors.black54,
-                  labelStyle: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
+            return Column(
+              children: [
+                SizedBox(
+                  height: previewHeight,
+                  child: SingleChildScrollView(
+                    physics: const BouncingScrollPhysics(),
+                    child: Center(child: _buildQrPreview()),
                   ),
-                  indicatorSize: TabBarIndicatorSize.tab,
-                  indicator: BoxDecoration(
-                    color: Theme.of(context).primaryColor,
-                    borderRadius: const BorderRadius.only(
-                      topLeft: Radius.circular(12),
-                      topRight: Radius.circular(12),
-                      bottomLeft: Radius.zero,
-                      bottomRight: Radius.zero,
+                ),
+                SizedBox(
+                  height: tabBarHeight,
+                  child: TabBar(
+                    controller: _tabController,
+                    tabs: _tabs,
+                    labelColor: Colors.white,
+                    unselectedLabelColor:
+                        Theme.of(context).brightness == Brightness.dark
+                            ? Colors.white54
+                            : Colors.black54,
+                    labelStyle: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                    ),
+                    indicatorSize: TabBarIndicatorSize.tab,
+                    indicator: BoxDecoration(
+                      color: Theme.of(context).primaryColor,
+                      borderRadius: const BorderRadius.only(
+                        topLeft: Radius.circular(12),
+                        topRight: Radius.circular(12),
+                      ),
                     ),
                   ),
                 ),
-              ),
-
-              // 残りはタブビューで埋める
-              Expanded(
-                child: TabBarView(
-                  controller: _tabController,
-                  children: [
-                    _buildCodeTab(),
-                    _buildBackgroundTab(),
-                    _buildIconTab(),
-                    _buildLabelTab(),
-                  ],
+                Expanded(
+                  child: TabBarView(
+                    controller: _tabController,
+                    children: [
+                      _buildCodeTab(),
+                      _buildBackgroundTab(),
+                      _buildIconTab(),
+                      _buildLabelTab(),
+                    ],
+                  ),
                 ),
-              ),
-            ],
-          );
-        },
+              ],
+            );
+          },
+        ),
       ),
     );
   }
