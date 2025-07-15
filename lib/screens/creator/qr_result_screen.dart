@@ -69,10 +69,10 @@ class QrResultScreen extends StatelessWidget {
             SizedBox(
               height: 56,
               child: ElevatedButton.icon(
-                icon: Icon(Icons.brush, color: AppColors.textLight),
+                icon: Icon(Icons.brush, color: AppColors.textLight, size: 24),
                 label: Text(
                   "Customize",
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.lime.shade600,
@@ -95,10 +95,10 @@ class QrResultScreen extends StatelessWidget {
             SizedBox(
               height: 56,
               child: ElevatedButton.icon(
-                icon: Icon(Icons.save_alt, color: AppColors.textLight),
+                icon: Icon(Icons.save_alt, color: AppColors.textLight, size: 24),
                 label: Text(
                   "Save Image",
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primary,
@@ -129,10 +129,10 @@ class QrResultScreen extends StatelessWidget {
             SizedBox(
               height: 56,
               child: ElevatedButton.icon(
-                icon: Icon(Icons.share, color: AppColors.textLight),
+                icon: Icon(Icons.share, color: AppColors.textLight, size: 24),
                 label: Text(
                   "Share",
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primary,
@@ -189,10 +189,10 @@ class QrResultScreen extends StatelessWidget {
             SizedBox(
               height: 56,
               child: ElevatedButton.icon(
-                icon: Icon(Icons.refresh, color: Colors.black),
+                icon: Icon(Icons.refresh, color: Colors.black, size: 24),
                 label: Text(
                   "Back to Top",
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black),
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black),
                 ),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.grey,

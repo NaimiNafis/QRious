@@ -58,10 +58,10 @@ class _QrInputScreenState extends State<QrInputScreen> {
           child: SizedBox(
             height: 56,
             child: ElevatedButton.icon(
-              icon: Icon(Icons.qr_code, color: AppColors.textLight),
+              icon: Icon(Icons.qr_code, color: AppColors.textLight, size: 24),
               label: Text(
                 "Generate QR Code",
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primary,
