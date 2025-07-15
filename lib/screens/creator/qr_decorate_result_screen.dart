@@ -153,11 +153,11 @@ class QrDecorateResultScreen extends StatelessWidget {
               width: double.infinity,
               height: 56,
               child: OutlinedButton.icon(
-                icon: const Icon(Icons.refresh, color: Colors.black),
+                icon: const Icon(Icons.refresh, color: Colors.black, size: 24),
                 label: const Text(
                   "Back to Top",
                   style: TextStyle(
-                    fontSize: 16,
+                    fontSize: 18,
                     fontWeight: FontWeight.bold,
                     color: Colors.black,
                   ),
@@ -189,10 +189,10 @@ class QrDecorateResultScreen extends StatelessWidget {
       width: double.infinity,
       height: 56,
       child: ElevatedButton.icon(
-        icon: Icon(icon, color: AppColors.textLight),
+        icon: Icon(icon, color: AppColors.textLight, size: 24),
         label: Text(
           label,
-          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
         ),
         style: ElevatedButton.styleFrom(
           backgroundColor: AppColors.primary,
