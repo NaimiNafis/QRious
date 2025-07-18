@@ -4,7 +4,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:image_gallery_saver/image_gallery_saver.dart';
+import 'package:image_gallery_saver_plus/image_gallery_saver_plus.dart';
 import 'package:path_provider/path_provider.dart';
 
 Future<String> captureAndSave(GlobalKey repaintKey) async {
@@ -26,8 +26,19 @@ Future<String> captureAndSave(GlobalKey repaintKey) async {
     final pngBytes = byteData.buffer.asUint8List();
 
     // パーミッション要求（Android）
-    final status = await Permission.storage.request();
-    if (!status.isGranted) throw Exception("Storage permission denied");
+    //final status = await Permission.storage.request();
+    //if (!status.isGranted) throw Exception("Storage permission denied");
+    if (Platform.isAndroid) {
+      final photos = await Permission.photos.request();
+      final media = await Permission.mediaLibrary.request();
+      if (photos.isDenied && media.isDenied) {
+        throw Exception("Storage permission denied");
+      }
+    } else {
+      if (!await Permission.storage.request().isGranted) {
+        throw Exception("Storage permission denied");
+      }
+    }
 
     // 一時ファイルにPNG保存
     final tempDir = await getTemporaryDirectory();
@@ -36,7 +47,7 @@ Future<String> captureAndSave(GlobalKey repaintKey) async {
     await file.writeAsBytes(pngBytes);
 
     // ギャラリーに保存（ファイルとして）
-    final result = await ImageGallerySaver.saveFile(file.path);
+    final result = await ImageGallerySaverPlus.saveFile(file.path);
     if (result == null || result['isSuccess'] != true) {
       throw Exception("Failed to save image");
     }
